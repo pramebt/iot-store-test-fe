@@ -172,7 +172,7 @@ export default function OrdersPage() {
                 <div className="space-y-4">
                   {order.items.map((item, index) => (
                     <div key={index} className="flex items-center gap-4">
-                      <div className="w-16 h-16 bg-gray-100 rounded-xl overflow-hidden flex-shrink-0">
+                      <div className="w-16 h-16 bg-gray-100 rounded-xl overflow-hidden shrink-0">
                         <img
                           src={item.product?.imageUrl || '/placeholder.jpg'}
                           alt={item.product?.name || 'Product'}

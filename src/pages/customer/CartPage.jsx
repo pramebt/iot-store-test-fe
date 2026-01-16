@@ -18,8 +18,7 @@ export default function CartPage() {
   };
 
   const handleCheckout = () => {
-    // TODO: Implement checkout
-    alert('Checkout functionality coming soon!');
+    navigate('/checkout');
   };
 
   if (items.length === 0) {
@@ -70,7 +69,7 @@ export default function CartPage() {
             >
               {/* Product Image */}
               <Link to={`/products/${item.id}`}>
-                <div className="w-32 h-32 bg-gray-100 rounded-xl overflow-hidden flex-shrink-0">
+                <div className="w-32 h-32 bg-gray-100 rounded-xl overflow-hidden shrink-0">
                   <img
                     src={item.imageUrl || '/placeholder.jpg'}
                     alt={item.name}

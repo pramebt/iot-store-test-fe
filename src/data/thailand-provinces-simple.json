@@ -1,0 +1,55 @@
+{
+  "type": "FeatureCollection",
+  "features": [
+    {
+      "type": "Feature",
+      "properties": { "name": "กรุงเทพมหานคร", "name_en": "Bangkok" },
+      "geometry": { "type": "Point", "coordinates": [100.5018, 13.7563] }
+    },
+    {
+      "type": "Feature",
+      "properties": { "name": "เชียงใหม่", "name_en": "Chiang Mai" },
+      "geometry": { "type": "Point", "coordinates": [98.9853, 18.7883] }
+    },
+    {
+      "type": "Feature",
+      "properties": { "name": "ภูเก็ต", "name_en": "Phuket" },
+      "geometry": { "type": "Point", "coordinates": [98.3923, 7.8804] }
+    },
+    {
+      "type": "Feature",
+      "properties": { "name": "ขอนแก่น", "name_en": "Khon Kaen" },
+      "geometry": { "type": "Point", "coordinates": [102.8236, 16.4322] }
+    },
+    {
+      "type": "Feature",
+      "properties": { "name": "สงขลา", "name_en": "Songkhla" },
+      "geometry": { "type": "Point", "coordinates": [100.5952, 7.1891] }
+    },
+    {
+      "type": "Feature",
+      "properties": { "name": "นครราชสีมา", "name_en": "Nakhon Ratchasima" },
+      "geometry": { "type": "Point", "coordinates": [102.1024, 14.9799] }
+    },
+    {
+      "type": "Feature",
+      "properties": { "name": "ชลบุรี", "name_en": "Chonburi" },
+      "geometry": { "type": "Point", "coordinates": [100.9866, 13.3611] }
+    },
+    {
+      "type": "Feature",
+      "properties": { "name": "อุดรธานี", "name_en": "Udon Thani" },
+      "geometry": { "type": "Point", "coordinates": [102.8160, 17.4138] }
+    },
+    {
+      "type": "Feature",
+      "properties": { "name": "สุราษฎร์ธานี", "name_en": "Surat Thani" },
+      "geometry": { "type": "Point", "coordinates": [99.3331, 9.1382] }
+    },
+    {
+      "type": "Feature",
+      "properties": { "name": "เชียงราย", "name_en": "Chiang Rai" },
+      "geometry": { "type": "Point", "coordinates": [99.8325, 19.9105] }
+    }
+  ]
+}

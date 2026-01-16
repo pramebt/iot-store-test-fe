@@ -16,6 +16,11 @@ export const ordersService = {
     return response.data;
   },
 
+  createOrder: async (orderData) => {
+    const response = await api.post('/api/orders', orderData);
+    return response.data;
+  },
+
   updateStatus: async (id, status) => {
     const response = await api.patch(`/api/orders/${id}/status`, { status });
     return response.data;

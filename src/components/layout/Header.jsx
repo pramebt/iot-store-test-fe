@@ -21,7 +21,7 @@ const Header = () => {
         <div className="flex items-center justify-between h-14">
           {/* Logo */}
           <Link to="/" className="flex items-center space-x-2 group">
-            <div className="w-8 h-8 bg-gradient-to-br from-gray-900 to-gray-700 rounded-lg flex items-center justify-center shadow-sm">
+            <div className="w-8 h-8 bg-linear-to-br from-gray-900 to-gray-700 rounded-lg flex items-center justify-center shadow-sm">
               <span className="text-white font-semibold text-sm">IoT</span>
             </div>
             <span className="text-lg font-medium text-gray-900 group-hover:text-gray-600 transition-colors">IoT Store</span>

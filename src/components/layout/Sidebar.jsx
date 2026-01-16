@@ -38,9 +38,9 @@ const Sidebar = () => {
       label: 'Analytics',
     },
     {
-      path: '/admin/users',
+      path: '/admin/customers',
       icon: User,
-      label: 'Users',
+      label: 'Customers',
     },
   ];
 
