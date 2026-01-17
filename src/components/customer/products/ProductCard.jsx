@@ -1,35 +1,41 @@
-import { Link } from 'react-router-dom';
-import { useCartStore } from '../../../store/cartStore';
-import Card from '../../common/Card';
-import Button from '../../common/Button';
+import { Link, useNavigate } from 'react-router-dom';
 import { formatPrice } from '../../../utils/formatPrice';
 
 export default function ProductCard({ product }) {
-  const addItem = useCartStore((state) => state.addItem);
+  const navigate = useNavigate();
 
-  const handleAddToCart = () => {
-    addItem({
-      id: product.id,
-      name: product.name,
-      price: product.price,
-      imageUrl: product.imageUrl,
-    }, 1);
+  const handleAddClick = (e) => {
+    e.preventDefault();
+    // Navigate to product detail page instead of adding to cart directly
+    navigate(`/products/${product.id}`);
   };
 
+  const isOutOfStock = product.stock === 0 || product.stock === null || product.stock === undefined;
+
   return (
-    <div className="bg-white rounded-2xl overflow-hidden hover:shadow-lg transition-all group">
+    <div className={`bg-white rounded-2xl overflow-hidden hover:shadow-lg transition-all group relative ${isOutOfStock ? 'opacity-75' : ''}`}>
+      {/* Out of Stock Badge */}
+      {isOutOfStock && (
+        <div className="absolute top-3 right-3 z-10 bg-red-500 text-white text-xs font-semibold px-3 py-1 rounded-full shadow-lg">
+          Out of Stock
+        </div>
+      )}
+      
       <Link to={`/products/${product.id}`}>
-        <div className="aspect-square bg-gray-100 overflow-hidden">
+        <div className="aspect-square bg-gray-100 overflow-hidden relative">
           <img
             src={product.imageUrl || '/placeholder.jpg'}
             alt={product.name}
-            className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
+            className={`w-full h-full object-cover group-hover:scale-105 transition-transform duration-300 ${isOutOfStock ? 'grayscale' : ''}`}
           />
+          {isOutOfStock && (
+            <div className="absolute inset-0 bg-black/20"></div>
+          )}
         </div>
       </Link>
       <div className="p-5 flex-1 flex flex-col">
         <Link to={`/products/${product.id}`}>
-          <h3 className="font-medium text-gray-900 mb-2 hover:text-gray-600 transition-colors">
+          <h3 className={`font-medium mb-2 hover:text-gray-600 transition-colors ${isOutOfStock ? 'text-gray-500' : 'text-gray-900'}`}>
             {product.name}
           </h3>
         </Link>
@@ -45,19 +51,19 @@ export default function ProductCard({ product }) {
         )}
         <div className="flex items-center justify-between">
           <div>
-            <span className="text-xl font-semibold text-gray-900">
+            <span className={`text-xl font-semibold ${isOutOfStock ? 'text-gray-400' : 'text-gray-900'}`}>
               {formatPrice(product.price)}
             </span>
-            <div className="text-xs text-gray-400">
-              Stock: {product.stock}
+            <div className={`text-xs ${isOutOfStock ? 'text-red-500 font-medium' : 'text-gray-400'}`}>
+              {isOutOfStock ? 'Out of Stock' : `Stock: ${product.stock}`}
             </div>
           </div>
           <button 
-            onClick={handleAddToCart}
-            disabled={product.stock === 0}
+            onClick={handleAddClick}
+            disabled={isOutOfStock}
             className="bg-gray-900 text-white text-sm px-4 py-2 rounded-full hover:bg-gray-800 transition-all disabled:bg-gray-300 disabled:cursor-not-allowed"
           >
-            {product.stock === 0 ? 'Out of Stock' : 'Add'}
+            {isOutOfStock ? 'Out of Stock' : 'Add'}
           </button>
         </div>
       </div>

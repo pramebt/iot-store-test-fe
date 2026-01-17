@@ -50,7 +50,7 @@ export default function ProductsTable({ products, onEdit, onDelete, onToggleStat
               </td>
               <td className="px-6 py-4 text-sm">
                 <span className={product.stock < 10 ? 'text-red-600 font-medium' : 'text-gray-900'}>
-                  {product.stock}
+                  {product.stock || 0}
                 </span>
               </td>
               <td className="px-6 py-4">

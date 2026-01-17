@@ -2,6 +2,8 @@ import { useEffect, useState } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { productsService } from '../../services/products.service';
 import { useCartStore } from '../../store/cartStore';
+import { useAuthStore } from '../../store/authStore';
+import AvailableLocationsSelector from '../../components/customer/products/AvailableLocationsSelector';
 import Button from '../../components/common/Button';
 import Card from '../../components/common/Card';
 import { formatPrice } from '../../utils/formatPrice';
@@ -14,7 +16,10 @@ export default function ProductDetailPage() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
   const [quantity, setQuantity] = useState(1);
+  const [selectedLocationId, setSelectedLocationId] = useState(null);
+  const [selectedLocationType, setSelectedLocationType] = useState(null);
   const addItem = useCartStore((state) => state.addItem);
+  const { user } = useAuthStore();
 
   useEffect(() => {
     loadProduct();
@@ -34,12 +39,23 @@ export default function ProductDetailPage() {
     }
   };
 
+  const handleLocationSelect = (locationId, locationType) => {
+    setSelectedLocationId(locationId);
+    setSelectedLocationType(locationType);
+  };
+
   const handleAddToCart = () => {
+    // Allow adding to cart without selecting location (for Online Order)
+    // If selectedLocationId is null, it will be an Online Order
+    // System will automatically select Delivery Address and SalesLocation at checkout
+    
     addItem({
       id: product.id,
       name: product.name,
       price: product.price,
       imageUrl: product.imageUrl,
+      selectedLocationId: selectedLocationId || null, // null = Online Order
+      selectedLocationType: selectedLocationType || null,
     }, quantity);
     // Show success message or redirect to cart
     navigate('/cart');
@@ -155,6 +171,26 @@ export default function ProductDetailPage() {
             </div>
           )}
 
+          {/* Available Locations Selector (Optional) */}
+          <div className="mb-6">
+            <div className="mb-2">
+              <label className="block text-sm font-medium text-gray-900 mb-1">
+                เลือกสาขา (ไม่บังคับ)
+              </label>
+              <p className="text-xs text-gray-500 mb-3">
+                {selectedLocationId 
+                  ? 'คุณเลือกสาขาแล้ว - จะเป็น In-Store Order (รับสินค้าที่สาขา)'
+                  : 'ไม่เลือกสาขา - จะเป็น Online Order (ส่งสินค้าไปบ้าน)'}
+              </p>
+            </div>
+            <AvailableLocationsSelector
+              productId={product.id}
+              selectedLocationId={selectedLocationId}
+              onSelect={handleLocationSelect}
+              customerProvince={user?.province || null}
+            />
+          </div>
+
           {/* Add to Cart Button */}
           <button
             disabled={product.stock === 0}
@@ -162,7 +198,9 @@ export default function ProductDetailPage() {
             className="w-full bg-gray-900 text-white py-4 rounded-full hover:bg-gray-800 transition-all font-medium mb-8 disabled:bg-gray-300 disabled:cursor-not-allowed flex items-center justify-center gap-2"
           >
             <ShoppingCart className="w-5 h-5" />
-            {product.stock === 0 ? 'Out of Stock' : 'Add to Cart'}
+            {product.stock === 0 
+              ? 'Out of Stock' 
+              : 'Add to Cart'}
           </button>
 
           {/* Features */}

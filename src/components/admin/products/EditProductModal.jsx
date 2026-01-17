@@ -24,8 +24,12 @@ export default function EditProductModal({ isOpen, onClose, onSuccess, productId
 
   useEffect(() => {
     if (isOpen && productId) {
+      console.log('EditProductModal: Loading product with ID:', productId)
       loadCategories()
       loadProduct()
+    } else if (isOpen && !productId) {
+      console.error('EditProductModal: productId is missing!')
+      setErrors({ submit: 'Product ID is missing' })
     }
   }, [isOpen, productId])
 
@@ -40,9 +44,28 @@ export default function EditProductModal({ isOpen, onClose, onSuccess, productId
   }
 
   const loadProduct = async () => {
+    if (!productId) {
+      console.error('loadProduct: productId is missing!')
+      setErrors({ submit: 'Product ID is required' })
+      return
+    }
+
     try {
       setLoadingProduct(true)
-      const product = await productsService.getById(productId)
+      console.log('Loading product with ID:', productId)
+      const response = await productsService.getById(productId)
+      
+      // Handle response format: { product: {...} } or direct product object
+      const product = response.product || response
+      
+      if (!product) {
+        console.error('Product not found for ID:', productId)
+        setErrors({ submit: 'Product not found' })
+        return
+      }
+      
+      console.log('Loaded product:', product)
+      console.log('Product stock:', product.stock)
       
       setFormData({
         name: product.name || '',
@@ -50,8 +73,8 @@ export default function EditProductModal({ isOpen, onClose, onSuccess, productId
         cost: product.cost?.toString() || '',
         basePrice: product.basePrice?.toString() || '',
         price: product.price?.toString() || '',
-        stock: product.stock?.toString() || '',
-        categoryId: product.categoryId || '',
+        stock: product.stock?.toString() || '0',
+        categoryId: product.categoryId || product.category?.id || '',
         status: product.status || 'Active'
       })
 
@@ -171,7 +194,7 @@ export default function EditProductModal({ isOpen, onClose, onSuccess, productId
         cost: formData.cost ? parseFloat(formData.cost) : 0,
         basePrice: parseFloat(formData.basePrice),
         price: parseFloat(formData.price),
-        stock: parseInt(formData.stock),
+        stock: parseInt(formData.stock), // Product.stock = stock หลัก
         categoryId: formData.categoryId,
         status: formData.status
       }
@@ -361,7 +384,7 @@ export default function EditProductModal({ isOpen, onClose, onSuccess, productId
                   <div className="grid grid-cols-3 gap-3">
                     <div>
                       <label htmlFor="stock" className="block text-sm font-medium text-gray-900 mb-1.5">
-                        Stock *
+                        Stock (หลัก) *
                       </label>
                       <input
                         type="number"
@@ -378,6 +401,9 @@ export default function EditProductModal({ isOpen, onClose, onSuccess, productId
                       {errors.stock && (
                         <p className="mt-1 text-xs text-red-600">{errors.stock}</p>
                       )}
+                      <p className="mt-1 text-xs text-gray-500">
+                        Stock หลัก - SalesLocation จะดึง stock จากนี้ไปใช้
+                      </p>
                     </div>
 
                     <div>

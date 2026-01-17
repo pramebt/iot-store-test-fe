@@ -6,6 +6,8 @@ import {
   ShoppingCart, 
   BarChart3,
   Users,
+  Store,
+  MapPin,
   X
 } from 'lucide-react'
 
@@ -42,6 +44,16 @@ export default function AdminSidebar({ isOpen, onClose }) {
       path: '/admin/customers',
       icon: Users,
       label: 'Customers',
+    },
+    {
+      path: '/admin/sales-locations',
+      icon: Store,
+      label: 'Sales Locations',
+    },
+    {
+      path: '/admin/delivery-addresses',
+      icon: MapPin,
+      label: 'Delivery Addresses',
     },
   ]
 

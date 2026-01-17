@@ -1,11 +1,12 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useCartStore } from '../../store/cartStore';
 import { useAuthStore } from '../../store/authStore';
 import { ordersService } from '../../services/orders.service';
+import { shippingService } from '../../services/shipping.service';
 import AddressSelector from '../../components/common/AddressSelector';
 import { formatPrice } from '../../utils/formatPrice';
-import { ShoppingBag, ImageIcon, X, CheckCircle2 } from 'lucide-react';
+import { ShoppingBag, ImageIcon, X, CheckCircle2, MapPin, Truck } from 'lucide-react';
 import { thailandAddress } from '../../utils/thailandAddress';
 
 export default function CheckoutPage() {
@@ -29,6 +30,8 @@ export default function CheckoutPage() {
   const [previewUrl, setPreviewUrl] = useState(null);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
+  const [shippingInfo, setShippingInfo] = useState(null);
+  const [calculatingShipping, setCalculatingShipping] = useState(false);
 
   const handleChange = (e) => {
     const { name, value } = e.target;
@@ -44,6 +47,100 @@ export default function CheckoutPage() {
       addressData
     }));
   };
+
+  // Calculate shipping when province changes
+  useEffect(() => {
+    const calculateShipping = async () => {
+      if (!formData.addressData.provinceId || items.length === 0) {
+        setShippingInfo(null);
+        return;
+      }
+
+      // Get province data outside try block so it's accessible in catch block
+      const provinceData = thailandAddress.getProvinceById(formData.addressData.provinceId);
+      
+      if (!provinceData) {
+        console.warn('Province data not found for ID:', formData.addressData.provinceId);
+        setShippingInfo(null);
+        return;
+      }
+
+      try {
+        setCalculatingShipping(true);
+
+        const orderItems = items.map(item => ({
+          productId: item.id,
+          quantity: item.quantity
+        }));
+
+        console.log('Calculating shipping with:', {
+          items: orderItems,
+          province: provinceData.name_th,
+          provinceData
+        });
+
+        if (!provinceData.name_th) {
+          console.error('Province name_th is missing:', provinceData);
+          setShippingInfo({
+            deliveryAddress: null,
+            shippingFee: 50,
+            estimatedShipping: '3-5 วัน',
+          });
+          return;
+        }
+
+        console.log('Sending to shipping service:', {
+          orderItems,
+          province: provinceData.name_th,
+          orderItemsString: JSON.stringify(orderItems)
+        });
+
+        const info = await shippingService.calculateShipping(orderItems, provinceData.name_th);
+        console.log('Shipping info received:', info);
+        setShippingInfo(info);
+      } catch (error) {
+        console.error('Failed to calculate shipping:', error);
+        console.error('Error response data:', error.response?.data);
+        console.error('Error details:', {
+          message: error.message,
+          response: error.response?.data,
+          items: items.map(item => ({ id: item.id, quantity: item.quantity })),
+          provinceId: formData.addressData.provinceId,
+          provinceName: provinceData?.name_th
+        });
+        
+        // Show error message to user
+        const errorMessage = error.response?.data?.error || error.response?.data?.message || error.message;
+        console.error('Error message:', errorMessage);
+        console.error('Full error response:', JSON.stringify(error.response?.data, null, 2));
+        
+        // Clear previous errors first
+        setError('');
+        
+        if (errorMessage && errorMessage.includes('No sales location')) {
+          setError('ไม่พบสาขาที่มีสินค้าครบทุกรายการ กรุณาตรวจสอบสต็อกสินค้าหรือติดต่อผู้ดูแลระบบ');
+        } else if (errorMessage && errorMessage.includes('No active delivery addresses')) {
+          setError('ไม่พบที่อยู่จัดส่งที่พร้อมใช้งาน กรุณาติดต่อผู้ดูแลระบบ');
+        } else {
+          setError(`ไม่สามารถคำนวณค่าจัดส่งได้: ${errorMessage}`);
+        }
+        
+        // Set default shipping if calculation fails (but still allow checkout)
+        // User can proceed with order, but admin needs to handle stock manually
+        setShippingInfo({
+          deliveryAddress: null,
+          shippingFee: 50,
+          estimatedShipping: '3-5 วัน',
+        });
+        
+        // Note: Error is already set above, so user will see the message
+      } finally {
+        setCalculatingShipping(false);
+      }
+    };
+
+    calculateShipping();
+  }, [formData.addressData.provinceId, items]);
 
   const handleFileSelect = (e) => {
     const file = e.target.files[0];
@@ -93,18 +190,41 @@ export default function CheckoutPage() {
         ? thailandAddress.getDistrictById(formData.addressData.districtId)
         : null;
 
+      // Check if all items have the same location
+      const locations = items
+        .filter(item => item.selectedLocationId)
+        .map(item => ({
+          id: item.selectedLocationId,
+          type: item.selectedLocationType
+        }));
+      
+      const uniqueLocations = [...new Map(locations.map(l => [l.id, l])).values()];
+      
+      // If multiple locations, use first one (or could split into multiple orders)
+      const selectedLocation = uniqueLocations[0];
+      
       // Prepare order data
+      // SalesLocation = สถานที่ขายและเก็บสินค้า → ส่งจาก SalesLocation
+      // Delivery Address = สถานที่ส่งสินค้า → ส่งจาก Delivery Address (ถ้าไม่เลือก SalesLocation)
       const orderData = {
         items: items.map(item => ({
           productId: item.id,
           quantity: item.quantity
         })),
+        // Add salesLocationId if it's a STORE or IOT_POINT
+        // SalesLocation = สถานที่ขายและเก็บสินค้า → ส่งจาก SalesLocation
+        ...(selectedLocation && (selectedLocation.type === 'STORE' || selectedLocation.type === 'IOT_POINT') && {
+          salesLocationId: selectedLocation.id
+        }),
+        // warehouseId (Delivery Address) will be selected automatically by backend if salesLocationId is not provided
+        // Delivery Address = สถานที่ส่งสินค้า → ส่งจาก Delivery Address
         address: formData.address,
         phone: formData.phone,
         province: provinceData?.name_th || '',
         district: districtData?.name_th || null,
         postalCode: formData.addressData.zipCode || null,
         note: formData.note || null,
+        shippingFee: shippingInfo?.shippingFee || 50,
       };
 
       // Create order (status will be PENDING by default)
@@ -176,7 +296,7 @@ export default function CheckoutPage() {
   }
 
   const subtotal = getTotal();
-  const shipping = 50;
+  const shipping = shippingInfo?.shippingFee || 50;
   const total = subtotal + shipping;
 
   return (
@@ -400,6 +520,28 @@ export default function CheckoutPage() {
                     ))}
                   </div>
 
+                  {/* Shipping Info */}
+                  {shippingInfo?.deliveryAddress && (
+                    <div className="mb-4 p-3 bg-blue-50 border border-blue-200 rounded-lg">
+                      <div className="flex items-start gap-2 mb-2">
+                        <MapPin className="w-4 h-4 text-blue-600 mt-0.5" />
+                        <div className="flex-1">
+                          <p className="text-xs font-medium text-blue-900">ส่งจาก</p>
+                          <p className="text-sm text-blue-800">{shippingInfo.deliveryAddress.name}</p>
+                          <p className="text-xs text-blue-600">{shippingInfo.deliveryAddress.province}</p>
+                        </div>
+                      </div>
+                      {shippingInfo.estimatedShipping && (
+                        <div className="flex items-center gap-2 mt-2">
+                          <Truck className="w-4 h-4 text-blue-600" />
+                          <p className="text-xs text-blue-700">
+                            ระยะเวลาจัดส่งประมาณ: {shippingInfo.estimatedShipping}
+                          </p>
+                        </div>
+                      )}
+                    </div>
+                  )}
+
                   {/* Totals */}
                   <div className="border-t border-gray-200 pt-4 space-y-3">
                     <div className="flex justify-between text-sm">
@@ -407,12 +549,21 @@ export default function CheckoutPage() {
                       <span className="text-gray-900 font-medium">{formatPrice(subtotal)}</span>
                     </div>
                     <div className="flex justify-between text-sm">
-                      <span className="text-gray-600">Shipping</span>
-                      <span className="text-gray-900 font-medium">{formatPrice(shipping)}</span>
+                      <span className="text-gray-600">
+                        Shipping
+                        {calculatingShipping && (
+                          <span className="ml-2 text-xs text-gray-400">(calculating...)</span>
+                        )}
+                      </span>
+                      <span className="text-gray-900 font-medium">
+                        {calculatingShipping ? '...' : formatPrice(shipping)}
+                      </span>
                     </div>
                     <div className="flex justify-between text-base font-semibold border-t border-gray-200 pt-4">
                       <span className="text-gray-900">Total</span>
-                      <span className="text-gray-900">{formatPrice(total)}</span>
+                      <span className="text-gray-900">
+                        {calculatingShipping ? '...' : formatPrice(total)}
+                      </span>
                     </div>
                   </div>
 

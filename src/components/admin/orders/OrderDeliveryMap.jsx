@@ -34,7 +34,7 @@ export default function OrderDeliveryMap({ order }) {
   const destinationCoords = provinceCoordinates[order?.province] || [13.7563, 100.5018];
   const hasValidLocation = order?.province && provinceCoordinates[order.province];
 
-  // Origin (warehouse/store) - Bangkok
+  // Origin (delivery address/store) - Bangkok
   const originCoords = [13.7563, 100.5018];
 
   // Initialize map
@@ -75,7 +75,7 @@ export default function OrderDeliveryMap({ order }) {
       }
     });
 
-    // Origin marker (Store/Warehouse)
+    // Origin marker (Store/Delivery Address)
     const originIcon = L.divIcon({
       className: 'custom-marker',
       html: `

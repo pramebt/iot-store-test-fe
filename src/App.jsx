@@ -20,6 +20,8 @@ import CategoriesManagementPage from './pages/admin/CategoriesManagementPage';
 import OrdersManagementPage from './pages/admin/OrdersManagementPage';
 import OrderDetailPage from './pages/admin/OrderDetailPage';
 import CustomersManagementPage from './pages/admin/CustomersManagementPage';
+import SalesLocationsManagementPage from './pages/admin/SalesLocationsManagementPage';
+import DeliveryAddressesManagementPage from './pages/admin/DeliveryAddressesManagementPage';
 import TestAPI from './pages/TestAPI';
 import NotFound from './pages/NotFound';
 
@@ -52,6 +54,8 @@ function App() {
           <Route path="/admin/orders/:id" element={<OrderDetailPage />} />
           <Route path="/admin/customers" element={<CustomersManagementPage />} />
           <Route path="/admin/analytics" element={<AnalyticsPage />} />
+          <Route path="/admin/sales-locations" element={<SalesLocationsManagementPage />} />
+          <Route path="/admin/delivery-addresses" element={<DeliveryAddressesManagementPage />} />
         </Route>
 
         {/* Routes without Layout */}

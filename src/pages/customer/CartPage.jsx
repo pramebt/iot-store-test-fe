@@ -9,11 +9,11 @@ export default function CartPage() {
   const navigate = useNavigate();
   const { items, updateQuantity, removeItem, clearCart, getTotal } = useCartStore();
 
-  const handleUpdateQuantity = (productId, newQuantity) => {
+  const handleUpdateQuantity = (item, newQuantity) => {
     if (newQuantity <= 0) {
-      removeItem(productId);
+      removeItem(item.id, item.selectedLocationId);
     } else {
-      updateQuantity(productId, newQuantity);
+      updateQuantity(item.id, newQuantity, item.selectedLocationId);
     }
   };
 
@@ -88,11 +88,23 @@ export default function CartPage() {
                 <div className="text-gray-900 font-semibold mt-1">
                   {formatPrice(item.price)}
                 </div>
+                {item.selectedLocationId ? (
+                  <div className="text-xs text-gray-500 mt-1">
+                    สถานที่ขาย: {item.selectedLocationType === 'WAREHOUSE' ? 'ที่อยู่จัดส่ง' : 
+                                item.selectedLocationType === 'IOT_POINT' ? 'จุดติดตั้ง IoT' : 
+                                'ร้านค้า'}
+                    <span className="ml-2 text-green-600">(In-Store Order)</span>
+                  </div>
+                ) : (
+                  <div className="text-xs text-blue-500 mt-1">
+                    ส่งสินค้าไปบ้าน (Online Order)
+                  </div>
+                )}
 
                 {/* Quantity Controls */}
                 <div className="flex items-center gap-3 mt-auto">
                   <button
-                    onClick={() => handleUpdateQuantity(item.id, item.quantity - 1)}
+                    onClick={() => handleUpdateQuantity(item, item.quantity - 1)}
                     className="w-8 h-8 rounded-full bg-gray-100 hover:bg-gray-200 flex items-center justify-center transition-colors"
                   >
                     <Minus className="w-4 h-4 text-gray-700" />
@@ -101,7 +113,7 @@ export default function CartPage() {
                     {item.quantity}
                   </span>
                   <button
-                    onClick={() => handleUpdateQuantity(item.id, item.quantity + 1)}
+                    onClick={() => handleUpdateQuantity(item, item.quantity + 1)}
                     className="w-8 h-8 rounded-full bg-gray-100 hover:bg-gray-200 flex items-center justify-center transition-colors"
                   >
                     <Plus className="w-4 h-4 text-gray-700" />
@@ -115,7 +127,7 @@ export default function CartPage() {
                   {formatPrice(item.price * item.quantity)}
                 </div>
                 <button
-                  onClick={() => removeItem(item.id)}
+                  onClick={() => removeItem(item.id, item.selectedLocationId)}
                   className="mt-auto w-8 h-8 rounded-full hover:bg-red-50 flex items-center justify-center transition-colors group"
                 >
                   <Trash2 className="w-4 h-4 text-gray-400 group-hover:text-red-600 transition-colors" />

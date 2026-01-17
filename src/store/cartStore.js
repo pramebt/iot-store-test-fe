@@ -8,41 +8,76 @@ const useCartStore = create(
 
       addItem: (product, quantity = 1) => {
         set((state) => {
-          const existingItem = state.items.find((item) => item.id === product.id);
+          // Check if same product with same location exists
+          const existingItem = state.items.find((item) => 
+            item.id === product.id && 
+            item.selectedLocationId === product.selectedLocationId
+          );
           
           if (existingItem) {
+            // Update quantity if same product and location
             return {
               items: state.items.map((item) =>
-                item.id === product.id
+                item.id === product.id && item.selectedLocationId === product.selectedLocationId
                   ? { ...item, quantity: item.quantity + quantity }
                   : item
               ),
             };
           }
           
+          // Add new item (different product or different location)
           return {
             items: [...state.items, { ...product, quantity }],
           };
         });
       },
 
-      removeItem: (productId) => {
-        set((state) => ({
-          items: state.items.filter((item) => item.id !== productId),
-        }));
+      removeItem: (productId, selectedLocationId = null) => {
+        set((state) => {
+          if (selectedLocationId) {
+            // Remove specific item with location
+            return {
+              items: state.items.filter(
+                (item) => !(item.id === productId && item.selectedLocationId === selectedLocationId)
+              ),
+            };
+          }
+          // Remove first matching item (backward compatibility)
+          return {
+            items: state.items.filter((item) => item.id !== productId),
+          };
+        });
       },
 
-      updateQuantity: (productId, quantity) => {
+      updateQuantity: (productId, quantity, selectedLocationId = null) => {
         if (quantity <= 0) {
-          get().removeItem(productId);
+          if (selectedLocationId) {
+            get().removeItem(productId, selectedLocationId);
+          } else {
+            get().removeItem(productId);
+          }
           return;
         }
         
-        set((state) => ({
-          items: state.items.map((item) =>
-            item.id === productId ? { ...item, quantity } : item
-          ),
-        }));
+        set((state) => {
+          // If selectedLocationId is provided, update specific item
+          if (selectedLocationId) {
+            return {
+              items: state.items.map((item) =>
+                item.id === productId && item.selectedLocationId === selectedLocationId
+                  ? { ...item, quantity }
+                  : item
+              ),
+            };
+          }
+          
+          // Otherwise, update first matching item
+          return {
+            items: state.items.map((item) =>
+              item.id === productId ? { ...item, quantity } : item
+            ),
+          };
+        });
       },
 
       clearCart: () => {

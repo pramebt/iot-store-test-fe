@@ -30,4 +30,10 @@ export const productsService = {
     const response = await api.post(`/api/products/${id}/image`, imageData);
     return response.data;
   },
+
+  getAvailability: async (id, province = null) => {
+    const params = province ? { province } : {};
+    const response = await api.get(`/api/products/${id}/availability`, { params });
+    return response.data;
+  },
 };

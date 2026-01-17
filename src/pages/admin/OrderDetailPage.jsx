@@ -15,7 +15,8 @@ import {
   MapPin,
   CheckCircle,
   XCircle,
-  AlertTriangle
+  AlertTriangle,
+  Store
 } from 'lucide-react';
 
 export default function OrderDetailPage() {
@@ -36,6 +37,14 @@ export default function OrderDetailPage() {
     try {
       setLoading(true);
       const data = await ordersService.getById(id);
+      console.log('Order data:', data);
+      console.log('Delivery Address:', data.deliveryAddress);
+      console.log('SalesLocation:', data.salesLocation);
+      console.log('deliveryAddressId:', data.deliveryAddressId);
+      console.log('salesLocationId:', data.salesLocationId);
+      console.log('Order Type:', data.salesLocationId ? 'In-Store Order' : 'Online Order');
+      console.log('Has Delivery Address:', data.deliveryAddressId ? 'Yes' : 'No');
+      console.log('Has SalesLocation:', data.salesLocationId ? 'Yes' : 'No');
       setOrder(data);
     } catch (err) {
       console.error('Error fetching order:', err);
@@ -387,6 +396,106 @@ export default function OrderDetailPage() {
               {order.province && <p>{order.province} {order.postalCode}</p>}
             </div>
           </div>
+
+          {/* Delivery Address / Sales Location Info */}
+          {/* Delivery Address = สถานที่จัดส่งสินค้า (ใช้เมื่อ Online Order) */}
+          {order.deliveryAddress ? (
+            <div className="bg-blue-50 border border-blue-200 rounded-xl p-5">
+              <div className="flex items-center gap-2 mb-4">
+                <MapPin className="w-5 h-5 text-blue-700" />
+                <h2 className="text-lg font-semibold text-blue-900">ที่อยู่จัดส่ง</h2>
+              </div>
+              <div className="space-y-2 text-sm text-blue-900">
+                <p className="font-medium">{order.deliveryAddress.name}</p>
+                <p className="text-blue-700">Code: {order.deliveryAddress.code}</p>
+                {order.deliveryAddress.address && (
+                  <p className="text-blue-700">{order.deliveryAddress.address}</p>
+                )}
+                {order.deliveryAddress.province && (
+                  <p className="text-blue-700">
+                    {order.deliveryAddress.district && `${order.deliveryAddress.district}, `}
+                    {order.deliveryAddress.province}
+                    {order.deliveryAddress.postalCode && ` ${order.deliveryAddress.postalCode}`}
+                  </p>
+                )}
+                {order.deliveryAddress.phone && (
+                  <p className="text-blue-700">Tel: {order.deliveryAddress.phone}</p>
+                )}
+              </div>
+            </div>
+          ) : order.deliveryAddressId ? (
+            <div className="bg-red-50 border border-red-200 rounded-xl p-5">
+              <div className="flex items-center gap-2 mb-4">
+                <MapPin className="w-5 h-5 text-red-700" />
+                <h2 className="text-lg font-semibold text-red-900">ไม่พบข้อมูลที่อยู่จัดส่ง</h2>
+              </div>
+              <p className="text-sm text-red-700">ที่อยู่จัดส่งอาจถูกลบหรือไม่พร้อมใช้งาน</p>
+              <p className="text-xs text-red-600 mt-2">Delivery Address ID: {order.deliveryAddressId}</p>
+              <p className="text-xs text-red-600">กรุณาตรวจสอบข้อมูลที่อยู่จัดส่ง</p>
+            </div>
+          ) : !order.salesLocation ? (
+            <div className="bg-yellow-50 border border-yellow-200 rounded-xl p-5">
+              <div className="flex items-center gap-2 mb-4">
+                <MapPin className="w-5 h-5 text-yellow-700" />
+                <h2 className="text-lg font-semibold text-yellow-900">สถานที่จัดส่ง</h2>
+              </div>
+              <p className="text-sm text-yellow-700">ยังไม่ได้เลือกที่อยู่จัดส่ง</p>
+              <p className="text-xs text-yellow-600 mt-2">
+                {order.province ? `จังหวัด: ${order.province}` : 'ไม่มีข้อมูลที่อยู่จัดส่ง'}
+              </p>
+              <p className="text-xs text-yellow-600">
+                {order.salesLocationId ? 'มี SalesLocation แต่ไม่มี Delivery Address' : 'Order นี้เป็น Online Order แต่ยังไม่ได้เลือก Delivery Address'}
+              </p>
+              <p className="text-xs text-yellow-500 mt-2 italic">
+                * Order นี้อาจถูกสร้างก่อนระบบ Delivery Address ทำงาน หรือมีปัญหาในการเลือก Delivery Address
+              </p>
+              {order.status === 'PENDING' || order.status === 'PAID' ? (
+                <button
+                  onClick={() => {
+                    // TODO: Implement delivery address assignment
+                    alert('Feature: Assign Delivery Address - Coming soon')
+                  }}
+                  className="mt-3 px-4 py-2 bg-yellow-600 text-white text-sm rounded-lg hover:bg-yellow-700 transition-colors"
+                >
+                  เลือกที่อยู่จัดส่ง
+                </button>
+              ) : null}
+            </div>
+          ) : null}
+
+          {/* SalesLocation = สถานที่ขายและเก็บสินค้า (ใช้เมื่อ In-Store Order หรือ Online Order ที่ลด stock) */}
+          {order.salesLocation && (
+            <div className="bg-green-50 border border-green-200 rounded-xl p-5">
+              <div className="flex items-center gap-2 mb-4">
+                <Store className="w-5 h-5 text-green-700" />
+                <h2 className="text-lg font-semibold text-green-900">
+                  {order.deliveryAddress ? 'สาขาที่มี Stock' : 'สาขาที่ขาย'}
+                </h2>
+              </div>
+              <div className="space-y-2 text-sm text-green-900">
+                <p className="font-medium">{order.salesLocation.name}</p>
+                <p className="text-green-700">Code: {order.salesLocation.code}</p>
+                {order.salesLocation.address && (
+                  <p className="text-green-700">{order.salesLocation.address}</p>
+                )}
+                {order.salesLocation.province && (
+                  <p className="text-green-700">
+                    {order.salesLocation.district && `${order.salesLocation.district}, `}
+                    {order.salesLocation.province}
+                    {order.salesLocation.postalCode && ` ${order.salesLocation.postalCode}`}
+                  </p>
+                )}
+                {order.salesLocation.phone && (
+                  <p className="text-green-700">Tel: {order.salesLocation.phone}</p>
+                )}
+                {order.deliveryAddress && (
+                  <p className="text-xs text-green-600 mt-2 italic">
+                    * Stock ลดจากสาขานี้ แต่ส่งจากที่อยู่จัดส่ง
+                  </p>
+                )}
+              </div>
+            </div>
+          )}
 
           {/* Payment Info */}
           <div className="bg-white/80 backdrop-blur-sm rounded-xl border border-gray-200 p-5">
