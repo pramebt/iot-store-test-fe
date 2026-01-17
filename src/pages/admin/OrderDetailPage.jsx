@@ -12,7 +12,10 @@ import {
   CreditCard,
   FileText,
   TrendingUp,
-  MapPin
+  MapPin,
+  CheckCircle,
+  XCircle,
+  AlertTriangle
 } from 'lucide-react';
 
 export default function OrderDetailPage() {
@@ -21,6 +24,9 @@ export default function OrderDetailPage() {
   const [order, setOrder] = useState(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
+  const [showApproveModal, setShowApproveModal] = useState(false);
+  const [showRejectModal, setShowRejectModal] = useState(false);
+  const [updatingStatus, setUpdatingStatus] = useState(false);
 
   useEffect(() => {
     fetchOrderDetail();
@@ -43,6 +49,7 @@ export default function OrderDetailPage() {
     const colors = {
       PENDING: 'bg-yellow-100 text-yellow-800 border-yellow-200',
       PAID: 'bg-blue-100 text-blue-800 border-blue-200',
+      CONFIRMED: 'bg-green-100 text-green-800 border-green-200',
       PROCESSING: 'bg-purple-100 text-purple-800 border-purple-200',
       SHIPPED: 'bg-indigo-100 text-indigo-800 border-indigo-200',
       DELIVERED: 'bg-green-100 text-green-800 border-green-200',
@@ -55,12 +62,41 @@ export default function OrderDetailPage() {
     const texts = {
       PENDING: 'รอชำระเงิน',
       PAID: 'ชำระเงินแล้ว',
+      CONFIRMED: 'ยืนยันการชำระเงินแล้ว',
       PROCESSING: 'กำลังจัดเตรียม',
       SHIPPED: 'จัดส่งแล้ว',
       DELIVERED: 'ส่งถึงแล้ว',
       CANCELLED: 'ยกเลิก',
     };
     return texts[status] || status;
+  };
+
+  const handleApprovePayment = async () => {
+    try {
+      setUpdatingStatus(true);
+      const updatedOrder = await ordersService.updateStatus(id, 'CONFIRMED');
+      setOrder(updatedOrder);
+      setShowApproveModal(false);
+    } catch (err) {
+      console.error('Error approving payment:', err);
+      setError(err.response?.data?.message || err.message || 'Failed to approve payment');
+    } finally {
+      setUpdatingStatus(false);
+    }
+  };
+
+  const handleRejectPayment = async () => {
+    try {
+      setUpdatingStatus(true);
+      const updatedOrder = await ordersService.updateStatus(id, 'PENDING');
+      setOrder(updatedOrder);
+      setShowRejectModal(false);
+    } catch (err) {
+      console.error('Error rejecting payment:', err);
+      setError(err.response?.data?.message || err.message || 'Failed to reject payment');
+    } finally {
+      setUpdatingStatus(false);
+    }
   };
 
   if (loading) {
@@ -190,6 +226,68 @@ export default function OrderDetailPage() {
             </div>
           </div>
 
+          {/* Payment Verification Section */}
+          {order.status === 'PAID' && order.paymentImage && (
+            <div className="bg-white/80 backdrop-blur-sm rounded-xl border-2 border-blue-200 p-5">
+              <div className="flex items-center gap-2 mb-4">
+                <CreditCard className="w-5 h-5 text-blue-700" />
+                <h2 className="text-lg font-semibold text-gray-900">Payment Verification</h2>
+                <span className="ml-auto px-2 py-1 text-xs font-medium bg-blue-100 text-blue-800 rounded-full">
+                  Awaiting Review
+                </span>
+              </div>
+
+              <div className="space-y-4">
+                <div>
+                  <p className="text-sm font-medium text-gray-700 mb-2">Payment Slip Submitted</p>
+                  <div className="relative group">
+                    <img 
+                      src={order.paymentImage} 
+                      alt="Payment slip"
+                      className="w-full rounded-lg border-2 border-gray-200 hover:border-blue-300 transition-colors cursor-pointer"
+                      onClick={() => window.open(order.paymentImage, '_blank')}
+                    />
+                    <div className="absolute inset-0 bg-black/0 hover:bg-black/5 rounded-lg transition-colors flex items-center justify-center opacity-0 group-hover:opacity-100">
+                      <span className="text-white text-sm font-medium bg-black/50 px-3 py-1 rounded">Click to view full size</span>
+                    </div>
+                  </div>
+                </div>
+
+                {order.paymentAt && (
+                  <div className="flex items-center gap-2 text-sm text-gray-600">
+                    <Calendar className="w-4 h-4" />
+                    <span>Payment Date: {new Date(order.paymentAt).toLocaleDateString('th-TH', {
+                      year: 'numeric',
+                      month: 'long',
+                      day: 'numeric',
+                      hour: '2-digit',
+                      minute: '2-digit'
+                    })}</span>
+                  </div>
+                )}
+
+                <div className="flex gap-3 pt-2">
+                  <button
+                    onClick={() => setShowApproveModal(true)}
+                    disabled={updatingStatus}
+                    className="flex-1 flex items-center justify-center gap-2 bg-green-600 text-white py-3 rounded-lg hover:bg-green-700 transition-colors font-medium disabled:opacity-50 disabled:cursor-not-allowed"
+                  >
+                    <CheckCircle className="w-5 h-5" />
+                    Approve Payment
+                  </button>
+                  <button
+                    onClick={() => setShowRejectModal(true)}
+                    disabled={updatingStatus}
+                    className="flex-1 flex items-center justify-center gap-2 bg-red-600 text-white py-3 rounded-lg hover:bg-red-700 transition-colors font-medium disabled:opacity-50 disabled:cursor-not-allowed"
+                  >
+                    <XCircle className="w-5 h-5" />
+                    Reject Payment
+                  </button>
+                </div>
+              </div>
+            </div>
+          )}
+
           {/* Order History / Timeline */}
           <div className="bg-white/80 backdrop-blur-sm rounded-xl border border-gray-200 p-5">
             <div className="flex items-center gap-2 mb-4">
@@ -232,6 +330,7 @@ export default function OrderDetailPage() {
                     <div className={`absolute left-[-24px] w-3 h-3 rounded-full border-2 border-white ${
                       order.status === 'DELIVERED' ? 'bg-green-600' :
                       order.status === 'CANCELLED' ? 'bg-red-600' :
+                      order.status === 'CONFIRMED' ? 'bg-green-500' :
                       'bg-yellow-500'
                     }`}></div>
                     <div>
@@ -353,6 +452,150 @@ export default function OrderDetailPage() {
           )}
         </div>
       </div>
+
+      {/* Approve Payment Confirmation Modal */}
+      {showApproveModal && (
+        <div className="fixed inset-0 z-50 overflow-y-auto">
+          <div 
+            className="fixed inset-0 bg-black/50 backdrop-blur-sm"
+            onClick={() => !updatingStatus && setShowApproveModal(false)}
+          />
+          <div className="relative min-h-screen flex items-center justify-center p-4">
+            <div className="relative bg-white rounded-2xl shadow-2xl w-full max-w-md">
+              <div className="px-6 py-4 border-b border-gray-200 flex items-center justify-between">
+                <div className="flex items-center gap-3">
+                  <div className="w-10 h-10 bg-green-100 rounded-full flex items-center justify-center">
+                    <CheckCircle className="w-5 h-5 text-green-600" />
+                  </div>
+                  <div>
+                    <h2 className="text-lg font-semibold text-gray-900">Approve Payment</h2>
+                    <p className="text-xs text-gray-600 mt-0.5">Confirm payment verification</p>
+                  </div>
+                </div>
+                {!updatingStatus && (
+                  <button
+                    onClick={() => setShowApproveModal(false)}
+                    className="text-gray-400 hover:text-gray-600 transition-colors"
+                  >
+                    <XCircle className="w-5 h-5" />
+                  </button>
+                )}
+              </div>
+
+              <div className="px-6 py-4">
+                <p className="text-sm text-gray-700 mb-4">
+                  Are you sure you want to approve this payment? The order status will be changed to <span className="font-semibold text-green-600">CONFIRMED</span>.
+                </p>
+                <div className="bg-gray-50 rounded-lg p-3 mb-4">
+                  <p className="text-xs text-gray-600 mb-1">Order Number</p>
+                  <p className="text-sm font-semibold text-gray-900">{order.orderNumber}</p>
+                </div>
+              </div>
+
+              <div className="px-6 py-4 border-t border-gray-200 flex gap-3 justify-end">
+                <button
+                  type="button"
+                  onClick={() => setShowApproveModal(false)}
+                  disabled={updatingStatus}
+                  className="px-4 py-2 text-sm border border-gray-300 rounded-lg hover:bg-gray-50 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+                >
+                  Cancel
+                </button>
+                <button
+                  type="button"
+                  onClick={handleApprovePayment}
+                  disabled={updatingStatus}
+                  className="px-4 py-2 text-sm bg-green-600 text-white rounded-lg hover:bg-green-700 transition-colors disabled:opacity-50 disabled:cursor-not-allowed inline-flex items-center gap-2"
+                >
+                  {updatingStatus ? (
+                    <>
+                      <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin" />
+                      Approving...
+                    </>
+                  ) : (
+                    <>
+                      <CheckCircle className="w-4 h-4" />
+                      Approve Payment
+                    </>
+                  )}
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Reject Payment Confirmation Modal */}
+      {showRejectModal && (
+        <div className="fixed inset-0 z-50 overflow-y-auto">
+          <div 
+            className="fixed inset-0 bg-black/50 backdrop-blur-sm"
+            onClick={() => !updatingStatus && setShowRejectModal(false)}
+          />
+          <div className="relative min-h-screen flex items-center justify-center p-4">
+            <div className="relative bg-white rounded-2xl shadow-2xl w-full max-w-md">
+              <div className="px-6 py-4 border-b border-gray-200 flex items-center justify-between">
+                <div className="flex items-center gap-3">
+                  <div className="w-10 h-10 bg-red-100 rounded-full flex items-center justify-center">
+                    <AlertTriangle className="w-5 h-5 text-red-600" />
+                  </div>
+                  <div>
+                    <h2 className="text-lg font-semibold text-gray-900">Reject Payment</h2>
+                    <p className="text-xs text-gray-600 mt-0.5">This will reset the order status</p>
+                  </div>
+                </div>
+                {!updatingStatus && (
+                  <button
+                    onClick={() => setShowRejectModal(false)}
+                    className="text-gray-400 hover:text-gray-600 transition-colors"
+                  >
+                    <XCircle className="w-5 h-5" />
+                  </button>
+                )}
+              </div>
+
+              <div className="px-6 py-4">
+                <p className="text-sm text-gray-700 mb-4">
+                  Are you sure you want to reject this payment? The order status will be changed back to <span className="font-semibold text-yellow-600">PENDING</span> and the customer will need to resubmit payment.
+                </p>
+                <div className="bg-gray-50 rounded-lg p-3 mb-4">
+                  <p className="text-xs text-gray-600 mb-1">Order Number</p>
+                  <p className="text-sm font-semibold text-gray-900">{order.orderNumber}</p>
+                </div>
+              </div>
+
+              <div className="px-6 py-4 border-t border-gray-200 flex gap-3 justify-end">
+                <button
+                  type="button"
+                  onClick={() => setShowRejectModal(false)}
+                  disabled={updatingStatus}
+                  className="px-4 py-2 text-sm border border-gray-300 rounded-lg hover:bg-gray-50 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+                >
+                  Cancel
+                </button>
+                <button
+                  type="button"
+                  onClick={handleRejectPayment}
+                  disabled={updatingStatus}
+                  className="px-4 py-2 text-sm bg-red-600 text-white rounded-lg hover:bg-red-700 transition-colors disabled:opacity-50 disabled:cursor-not-allowed inline-flex items-center gap-2"
+                >
+                  {updatingStatus ? (
+                    <>
+                      <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin" />
+                      Rejecting...
+                    </>
+                  ) : (
+                    <>
+                      <XCircle className="w-4 h-4" />
+                      Reject Payment
+                    </>
+                  )}
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 }

@@ -4,6 +4,8 @@ import { categoriesService } from '../../services/categories.service'
 import ProductsTable from '../../components/admin/products/ProductsTable'
 import ProductsFilters from '../../components/admin/products/ProductsFilters'
 import AddProductModal from '../../components/admin/products/AddProductModal'
+import EditProductModal from '../../components/admin/products/EditProductModal'
+import DeleteProductModal from '../../components/admin/products/DeleteProductModal'
 import Pagination from '../../components/admin/products/Pagination'
 import LoadingSpinner from '../../components/common/LoadingSpinner'
 
@@ -19,8 +21,9 @@ export default function ProductsManagementPage() {
     limit: 10
   })
   const [totalPages, setTotalPages] = useState(1)
-  const [showModal, setShowModal] = useState(false)
   const [showAddModal, setShowAddModal] = useState(false)
+  const [showEditModal, setShowEditModal] = useState(false)
+  const [showDeleteModal, setShowDeleteModal] = useState(false)
   const [selectedProduct, setSelectedProduct] = useState(null)
 
   useEffect(() => {
@@ -60,11 +63,23 @@ export default function ProductsManagementPage() {
     }
   }
 
-  const handleDelete = async (id) => {
-    if (!confirm('Are you sure you want to delete this product?')) return
+  const handleEdit = (product) => {
+    setSelectedProduct(product)
+    setShowEditModal(true)
+  }
+
+  const handleDelete = (product) => {
+    setSelectedProduct(product)
+    setShowDeleteModal(true)
+  }
+
+  const confirmDelete = async () => {
+    if (!selectedProduct) return
     
     try {
-      await productsService.delete(id)
+      await productsService.delete(selectedProduct.id)
+      setShowDeleteModal(false)
+      setSelectedProduct(null)
       loadProducts()
     } catch (error) {
       console.error('Failed to delete product:', error)
@@ -115,6 +130,7 @@ export default function ProductsManagementPage() {
           <>
             <ProductsTable
               products={products}
+              onEdit={handleEdit}
               onDelete={handleDelete}
               onToggleStatus={handleToggleStatus}
             />
@@ -132,6 +148,32 @@ export default function ProductsManagementPage() {
         isOpen={showAddModal}
         onClose={() => setShowAddModal(false)}
         onSuccess={loadProducts}
+      />
+
+      {/* Edit Product Modal */}
+      <EditProductModal
+        isOpen={showEditModal}
+        onClose={() => {
+          setShowEditModal(false)
+          setSelectedProduct(null)
+        }}
+        onSuccess={() => {
+          setShowEditModal(false)
+          setSelectedProduct(null)
+          loadProducts()
+        }}
+        productId={selectedProduct?.id}
+      />
+
+      {/* Delete Product Modal */}
+      <DeleteProductModal
+        isOpen={showDeleteModal}
+        onClose={() => {
+          setShowDeleteModal(false)
+          setSelectedProduct(null)
+        }}
+        onConfirm={confirmDelete}
+        product={selectedProduct}
       />
     </div>
   )

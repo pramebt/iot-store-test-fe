@@ -1,36 +1,166 @@
-import { ComposableMap, Geographies, Geography, Marker, ZoomableGroup } from 'react-simple-maps';
+import { useEffect, useRef, useMemo } from 'react';
+import L from 'leaflet';
+import 'leaflet/dist/leaflet.css';
 import { MapPin, Package } from 'lucide-react';
+import { getProvincesWithCoordinates } from '../../../utils/thailandAddress';
+
+// Fix Leaflet default marker icon issue
+delete L.Icon.Default.prototype._getIconUrl;
+L.Icon.Default.mergeOptions({
+  iconRetinaUrl: 'https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.7.1/images/marker-icon-2x.png',
+  iconUrl: 'https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.7.1/images/marker-icon.png',
+  shadowUrl: 'https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.7.1/images/marker-shadow.png',
+});
 
 export default function OrderDeliveryMap({ order }) {
-  // Thailand GeoJSON URL
-  const geoUrl = "https://raw.githubusercontent.com/apisit/thailand.json/master/thailand.json";
+  const mapRef = useRef(null);
+  const mapInstanceRef = useRef(null);
 
-  // Province coordinates mapping (major provinces)
-  const provinceCoordinates = {
-    'กรุงเทพมหานคร': [100.5018, 13.7563],
-    'เชียงใหม่': [98.9853, 18.7883],
-    'ภูเก็ต': [98.3923, 7.8804],
-    'ขอนแก่น': [102.8236, 16.4322],
-    'สงขลา': [100.5952, 7.1891],
-    'นครราชสีมา': [102.1024, 14.9799],
-    'ชลบุรี': [100.9866, 13.3611],
-    'อุดรธานี': [102.8160, 17.4138],
-    'สุราษฎร์ธานี': [99.3331, 9.1382],
-    'เชียงราย': [99.8325, 19.9105],
-    'นครสวรรค์': [100.1377, 15.7047],
-    'อุบลราชธานี': [104.8561, 15.2286],
-    'ระยอง': [101.2816, 12.6814],
-    'นครปฐม': [100.0376, 13.8196],
-    'ปทุมธานี': [100.5265, 14.0209],
-    'นนทบุรี': [100.5167, 13.8621],
-  };
+  // โหลดพิกัดจังหวัดจาก JSON
+  const provinceCoordinates = useMemo(() => {
+    const provinces = getProvincesWithCoordinates();
+    const coordsMap = {};
+    
+    provinces.forEach(province => {
+      if (province.lat && province.long) {
+        coordsMap[province.nameTh] = [province.lat, province.long];
+      }
+    });
+    
+    return coordsMap;
+  }, []);
 
   // Get destination coordinates
-  const destinationCoords = provinceCoordinates[order?.province] || [100.5, 13.5];
+  const destinationCoords = provinceCoordinates[order?.province] || [13.7563, 100.5018];
   const hasValidLocation = order?.province && provinceCoordinates[order.province];
 
   // Origin (warehouse/store) - Bangkok
-  const originCoords = [100.5018, 13.7563];
+  const originCoords = [13.7563, 100.5018];
+
+  // Initialize map
+  useEffect(() => {
+    if (!mapRef.current || mapInstanceRef.current) return;
+
+    // Create map
+    const map = L.map(mapRef.current, {
+      center: originCoords,
+      zoom: 6,
+      scrollWheelZoom: true,
+    });
+
+    mapInstanceRef.current = map;
+
+    // Add tile layer
+    L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+      attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a>',
+      maxZoom: 18,
+    }).addTo(map);
+
+    return () => {
+      if (mapInstanceRef.current) {
+        mapInstanceRef.current.remove();
+        mapInstanceRef.current = null;
+      }
+    };
+  }, []);
+
+  // Update markers when order changes
+  useEffect(() => {
+    if (!mapInstanceRef.current) return;
+
+    // Clear existing layers
+    mapInstanceRef.current.eachLayer((layer) => {
+      if (layer instanceof L.Marker || layer instanceof L.Polyline) {
+        mapInstanceRef.current.removeLayer(layer);
+      }
+    });
+
+    // Origin marker (Store/Warehouse)
+    const originIcon = L.divIcon({
+      className: 'custom-marker',
+      html: `
+        <div style="
+          width: 32px;
+          height: 32px;
+          background-color: #3b82f6;
+          border: 3px solid white;
+          border-radius: 50%;
+          box-shadow: 0 4px 6px rgba(0,0,0,0.3);
+          display: flex;
+          align-items: center;
+          justify-content: center;
+        ">
+          <svg width="16" height="16" fill="white" viewBox="0 0 24 24">
+            <path d="M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z"></path>
+          </svg>
+        </div>
+      `,
+      iconSize: [32, 32],
+      iconAnchor: [16, 16],
+    });
+
+    const originMarker = L.marker(originCoords, { icon: originIcon })
+      .addTo(mapInstanceRef.current)
+      .bindPopup(`
+        <div style="text-align: center;">
+          <h3 style="margin: 0 0 8px 0; font-weight: bold; color: #1f2937;">Origin (Store)</h3>
+          <p style="margin: 4px 0; color: #6b7280;">กรุงเทพมหานคร</p>
+          <p style="margin: 4px 0; color: #6b7280; font-size: 12px;">คลังสินค้าหลัก</p>
+        </div>
+      `);
+
+    // Destination marker if valid location
+    if (hasValidLocation) {
+      const destIcon = L.divIcon({
+        className: 'custom-marker',
+        html: `
+          <div style="
+            width: 40px;
+            height: 40px;
+            background-color: #dc2626;
+            border: 3px solid white;
+            border-radius: 50%;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.3);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            animation: pulse 2s cubic-bezier(0.4, 0, 0.6, 1) infinite;
+          ">
+            <div style="
+              width: 16px;
+              height: 16px;
+              background-color: white;
+              border-radius: 50%;
+            "></div>
+          </div>
+        `,
+        iconSize: [40, 40],
+        iconAnchor: [20, 20],
+      });
+
+      const destMarker = L.marker(destinationCoords, { icon: destIcon })
+        .addTo(mapInstanceRef.current)
+        .bindPopup(`
+          <div style="text-align: center;">
+            <h3 style="margin: 0 0 8px 0; font-weight: bold; color: #1f2937;">Destination</h3>
+            <p style="margin: 4px 0; color: #6b7280; font-weight: bold;">${order.province}</p>
+            ${order.district ? `<p style="margin: 4px 0; color: #6b7280; font-size: 12px;">${order.district}</p>` : ''}
+          </div>
+        `);
+
+      // Draw line between origin and destination
+      const line = L.polyline([originCoords, destinationCoords], {
+        color: '#60a5fa',
+        weight: 2,
+        opacity: 0.6,
+        dashArray: '10, 10',
+      }).addTo(mapInstanceRef.current);
+
+      // Fit map to show both markers
+      const bounds = L.latLngBounds([originCoords, destinationCoords]);
+      mapInstanceRef.current.fitBounds(bounds, { padding: [50, 50] });
+    }
+  }, [order, hasValidLocation, destinationCoords, originCoords]);
 
   return (
     <div className="bg-white/80 backdrop-blur-sm rounded-xl border border-gray-200 p-5">
@@ -50,101 +180,12 @@ export default function OrderDeliveryMap({ order }) {
       </div>
 
       <div className="bg-gray-50 rounded-lg p-4">
-        {/* Map */}
-        <ComposableMap
-          projection="geoMercator"
-          projectionConfig={{
-            center: [100.5, 13.5],
-            scale: 2000
-          }}
-          width={800}
-          height={500}
-          className="w-full h-auto"
-        >
-          <ZoomableGroup center={[100.5, 13.5]} zoom={1}>
-            {/* Thailand Base Map */}
-            <Geographies geography={geoUrl}>
-              {({ geographies }) =>
-                geographies.map((geo) => (
-                  <Geography
-                    key={geo.rsmKey}
-                    geography={geo}
-                    fill="#f3f4f6"
-                    stroke="#d1d5db"
-                    strokeWidth={0.5}
-                    style={{
-                      default: { outline: 'none' },
-                      hover: { outline: 'none', fill: '#e5e7eb' },
-                      pressed: { outline: 'none' }
-                    }}
-                  />
-                ))
-              }
-            </Geographies>
-
-            {/* Origin Marker (Warehouse/Store) */}
-            <Marker coordinates={originCoords}>
-              <g>
-                <circle
-                  r={6}
-                  fill="#3b82f6"
-                  stroke="#ffffff"
-                  strokeWidth={2}
-                  className="drop-shadow-lg"
-                />
-                <Package className="w-3 h-3" style={{ x: -6, y: -6 }} fill="#ffffff" />
-              </g>
-              <text
-                textAnchor="middle"
-                y={20}
-                className="text-[9px] fill-blue-700 font-semibold"
-              >
-                Origin (Store)
-              </text>
-            </Marker>
-
-            {/* Destination Marker */}
-            {hasValidLocation && (
-              <Marker coordinates={destinationCoords}>
-                <g>
-                  <circle
-                    r={8}
-                    fill="#dc2626"
-                    stroke="#ffffff"
-                    strokeWidth={2}
-                    className="drop-shadow-lg"
-                  />
-                  <circle
-                    r={4}
-                    fill="#ffffff"
-                    className="animate-pulse"
-                  />
-                </g>
-                <text
-                  textAnchor="middle"
-                  y={22}
-                  className="text-[9px] fill-red-700 font-semibold"
-                >
-                  {order.province}
-                </text>
-              </Marker>
-            )}
-
-            {/* Connection Line */}
-            {hasValidLocation && (
-              <line
-                x1={originCoords[0] * 10}
-                y1={originCoords[1] * 10}
-                x2={destinationCoords[0] * 10}
-                y2={destinationCoords[1] * 10}
-                stroke="#60a5fa"
-                strokeWidth={1}
-                strokeDasharray="5,5"
-                opacity={0.5}
-              />
-            )}
-          </ZoomableGroup>
-        </ComposableMap>
+        {/* Map Container */}
+        <div 
+          ref={mapRef} 
+          className="w-full h-[400px] rounded-lg overflow-hidden border border-gray-200 mb-4"
+          style={{ zIndex: 1 }}
+        />
 
         {/* Delivery Info */}
         <div className="mt-4 grid grid-cols-2 gap-3">

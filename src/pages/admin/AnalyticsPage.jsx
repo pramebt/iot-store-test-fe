@@ -1,7 +1,7 @@
 import { useEffect, useState } from 'react';
 import { analyticsService } from '../../services/analytics.service';
 import AnalyticsStats from '../../components/admin/analytics/AnalyticsStats';
-import ThailandMap from '../../components/admin/analytics/ThailandMap';
+import LeafletMap from '../../components/admin/analytics/LeafletMap';
 import AnalyticsCharts from '../../components/admin/analytics/AnalyticsCharts';
 import { RefreshCw } from 'lucide-react';
 
@@ -108,13 +108,13 @@ export default function AnalyticsPage() {
       {/* Stats Cards */}
       <AnalyticsStats summary={data.summary} />
 
-      {/* Map and Charts Grid */}
-      <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 sm:gap-6">
-        {/* Map */}
-        <div>
-          <ThailandMap salesByProvince={data.salesByProvince} />
-        </div>
+      {/* Leaflet Map - Full Width */}
+      <div>
+        <LeafletMap salesByProvince={data.salesByProvince} />
+      </div>
 
+      {/* Top Provinces and Charts */}
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 sm:gap-6">
         {/* Top Provinces List */}
         <div className="bg-white/80 backdrop-blur-sm rounded-xl border border-gray-200 p-5">
           <h3 className="text-lg font-semibold mb-4 text-gray-900">Top Provinces</h3>

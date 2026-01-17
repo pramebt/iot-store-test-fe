@@ -43,9 +43,11 @@ export default function AddProductModal({ isOpen, onClose, onSuccess }) {
   const loadCategories = async () => {
     try {
       const data = await categoriesService.getAll()
-      setCategories(data.categories || [])
+      // Backend returns array directly, not { categories: [] }
+      setCategories(Array.isArray(data) ? data : [])
     } catch (error) {
       console.error('Failed to load categories:', error)
+      setCategories([])
     }
   }
 
@@ -148,10 +150,22 @@ export default function AddProductModal({ isOpen, onClose, onSuccess }) {
 
       const result = await productsService.create(productData)
 
-      if (imageFile && result.product?.id) {
-        const formDataImage = new FormData()
-        formDataImage.append('image', imageFile)
-        await productsService.uploadImage(result.product.id, formDataImage)
+      // Upload image if selected
+      if (imageFile && result.id) {
+        // Convert image to base64
+        const reader = new FileReader()
+        reader.readAsDataURL(imageFile)
+        await new Promise((resolve, reject) => {
+          reader.onloadend = async () => {
+            try {
+              await productsService.uploadImage(result.id, { image: reader.result })
+              resolve()
+            } catch (uploadErr) {
+              reject(uploadErr)
+            }
+          }
+          reader.onerror = reject
+        })
       }
 
       onSuccess()

@@ -26,12 +26,8 @@ export const productsService = {
     return response.data;
   },
 
-  uploadImage: async (id, formData) => {
-    const response = await api.post(`/api/products/${id}/image`, formData, {
-      headers: {
-        'Content-Type': 'multipart/form-data',
-      },
-    });
+  uploadImage: async (id, imageData) => {
+    const response = await api.post(`/api/products/${id}/image`, imageData);
     return response.data;
   },
 };

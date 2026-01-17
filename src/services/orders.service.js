@@ -22,7 +22,12 @@ export const ordersService = {
   },
 
   updateStatus: async (id, status) => {
-    const response = await api.patch(`/api/orders/${id}/status`, { status });
+    const response = await api.put(`/api/orders/${id}/status`, { status });
+    return response.data;
+  },
+
+  uploadPayment: async (id, paymentSlipUrl) => {
+    const response = await api.post(`/api/orders/${id}/payment`, { paymentSlipUrl });
     return response.data;
   },
 

@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, Link } from 'react-router-dom';
 import { useAuthStore } from '../../store/authStore';
 import Card from '../../components/common/Card';
 import Input from '../../components/common/Input';
@@ -38,10 +38,10 @@ export default function LoginPage() {
   };
 
   return (
-    <div className="flex items-center justify-center min-h-screen bg-gradient-to-b from-gray-50 to-white">
+    <div className="flex items-center justify-center min-h-screen bg-linear-to-b from-gray-50 to-white">
       <div className="w-full max-w-md px-6">
         <div className="text-center mb-8">
-          <div className="w-16 h-16 bg-gradient-to-br from-gray-900 to-gray-700 rounded-2xl flex items-center justify-center mx-auto mb-6 shadow-lg">
+          <div className="w-16 h-16 bg-linear-to-br from-gray-900 to-gray-700 rounded-2xl flex items-center justify-center mx-auto mb-6 shadow-lg">
             <span className="text-white font-semibold text-2xl">IoT</span>
           </div>
           <h1 className="text-4xl font-semibold mb-2 text-gray-900">Welcome back</h1>
@@ -96,6 +96,19 @@ export default function LoginPage() {
             <p className="text-sm text-gray-700">admin@example.com</p>
             <p className="text-sm text-gray-700">admin123</p>
           </div>
+        </div>
+
+        {/* Register Link */}
+        <div className="mt-6 text-center">
+          <p className="text-sm text-gray-600">
+            Don't have an account?{' '}
+            <Link 
+              to="/register" 
+              className="text-gray-900 font-medium hover:underline"
+            >
+              Register
+            </Link>
+          </p>
         </div>
       </div>
     </div>

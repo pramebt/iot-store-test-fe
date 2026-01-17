@@ -1,7 +1,6 @@
-import { Link } from 'react-router-dom'
-import { Package } from 'lucide-react'
+import { Package, Edit2, Trash2 } from 'lucide-react'
 
-export default function ProductsTable({ products, onDelete, onToggleStatus }) {
+export default function ProductsTable({ products, onEdit, onDelete, onToggleStatus }) {
   if (products.length === 0) {
     return (
       <div className="px-6 py-8 text-center text-gray-500">
@@ -67,18 +66,20 @@ export default function ProductsTable({ products, onDelete, onToggleStatus }) {
                 </button>
               </td>
               <td className="px-6 py-4 text-sm">
-                <div className="flex space-x-2">
-                  <Link
-                    to={`/admin/products/${product.id}`}
-                    className="text-blue-600 hover:text-blue-700"
-                  >
-                    Edit
-                  </Link>
+                <div className="flex items-center gap-2">
                   <button
-                    onClick={() => onDelete(product.id)}
-                    className="text-red-600 hover:text-red-700"
+                    onClick={() => onEdit(product)}
+                    className="p-1.5 text-blue-600 hover:text-blue-700 hover:bg-blue-50 rounded-lg transition-colors"
+                    title="Edit product"
                   >
-                    Delete
+                    <Edit2 className="w-4 h-4" />
+                  </button>
+                  <button
+                    onClick={() => onDelete(product)}
+                    className="p-1.5 text-red-600 hover:text-red-700 hover:bg-red-50 rounded-lg transition-colors"
+                    title="Delete product"
+                  >
+                    <Trash2 className="w-4 h-4" />
                   </button>
                 </div>
               </td>

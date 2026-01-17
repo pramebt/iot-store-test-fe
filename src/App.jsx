@@ -7,9 +7,12 @@ import ProductDetailPage from './pages/customer/ProductDetailPage';
 import CartPage from './pages/customer/CartPage';
 import CheckoutPage from './pages/customer/CheckoutPage';
 import OrdersPage from './pages/customer/OrdersPage';
+import CustomerOrderDetailPage from './pages/customer/CustomerOrderDetailPage';
+import ProfilePage from './pages/customer/ProfilePage';
 import About from './pages/About';
 import Contact from './pages/Contact';
 import LoginPage from './pages/auth/LoginPage';
+import RegisterPage from './pages/auth/RegisterPage';
 import AnalyticsPage from './pages/admin/AnalyticsPage';
 import DashboardPage from './pages/admin/DashboardPage';
 import ProductsManagementPage from './pages/admin/ProductsManagementPage';
@@ -32,7 +35,8 @@ function App() {
           <Route path="/cart" element={<CartPage />} />
           <Route path="/checkout" element={<CheckoutPage />} />
           <Route path="/orders" element={<OrdersPage />} />
-          <Route path="/orders/:id" element={<OrdersPage />} />
+          <Route path="/orders/:id" element={<CustomerOrderDetailPage />} />
+          <Route path="/profile" element={<ProfilePage />} />
           <Route path="/about" element={<About />} />
           <Route path="/contact" element={<Contact />} />
           <Route path="/test-api" element={<TestAPI />} />
@@ -52,6 +56,7 @@ function App() {
 
         {/* Routes without Layout */}
         <Route path="/login" element={<LoginPage />} />
+        <Route path="/register" element={<RegisterPage />} />
         
         {/* 404 */}
         <Route path="*" element={<NotFound />} />

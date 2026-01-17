@@ -10,8 +10,11 @@ export default function ProductsPage() {
   const [error, setError] = useState(null);
   const [filters, setFilters] = useState({
     search: '',
-    sort: '',
+    sortBy: '',
+    order: '',
     status: '',
+    minPrice: undefined,
+    maxPrice: undefined,
   });
   const [pagination, setPagination] = useState({
     page: 1,
@@ -34,31 +37,22 @@ export default function ProductsPage() {
         limit: pagination.limit,
         search: filters.search || undefined,
         status: filters.status || undefined,
+        minPrice: filters.minPrice !== undefined ? filters.minPrice : undefined,
+        maxPrice: filters.maxPrice !== undefined ? filters.maxPrice : undefined,
+        sortBy: filters.sortBy || undefined,
+        order: filters.order || undefined,
       };
+
+      // Remove undefined values
+      Object.keys(params).forEach(key => {
+        if (params[key] === undefined) {
+          delete params[key];
+        }
+      });
 
       const data = await productsService.getAll(params);
       
-      let productsData = data.products || [];
-      
-      // Client-side sorting
-      if (filters.sort) {
-        productsData = [...productsData].sort((a, b) => {
-          switch (filters.sort) {
-            case 'price_asc':
-              return a.price - b.price;
-            case 'price_desc':
-              return b.price - a.price;
-            case 'name_asc':
-              return a.name.localeCompare(b.name);
-            case 'name_desc':
-              return b.name.localeCompare(a.name);
-            default:
-              return 0;
-          }
-        });
-      }
-      
-      setProducts(productsData);
+      setProducts(data.products || []);
       setPagination((prev) => ({
         ...prev,
         total: data.total || 0,
