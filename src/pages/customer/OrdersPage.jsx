@@ -244,7 +244,7 @@ export default function OrdersPage() {
                   </span>
                 </div>
                 <div className="text-sm text-slate-600 font-light">
-                  Placed on {formatDate(order.createdAt)}
+                  สั่งซื้อเมื่อ {formatDate(order.createdAt)}
                 </div>
               </div>
               <div className="mt-4 md:mt-0 text-right">
@@ -252,7 +252,7 @@ export default function OrdersPage() {
                   {formatPrice(order.totalAmount)}
                 </div>
                 <div className="text-sm text-slate-600 font-light">
-                  {order.items?.length || 0} item{order.items?.length !== 1 ? 's' : ''}
+                  {order.items?.length || 0} รายการ
                 </div>
               </div>
             </div>
