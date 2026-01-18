@@ -1,6 +1,7 @@
 import { BrowserRouter, Routes, Route } from 'react-router-dom';
 import Layout from './components/layout/Layout';
 import AdminLayout from './components/layout/AdminLayout';
+import ProtectedAdminRoute from './components/auth/ProtectedAdminRoute';
 import HomePage from './pages/customer/HomePage';
 import ProductsPage from './pages/customer/ProductsPage';
 import ProductDetailPage from './pages/customer/ProductDetailPage';
@@ -47,18 +48,20 @@ function App() {
           <Route path="/test-api" element={<TestAPI />} />
         </Route>
 
-        {/* Admin Routes with AdminLayout */}
-        <Route element={<AdminLayout />}>
-          <Route path="/admin" element={<DashboardPage />} />
-          <Route path="/admin/dashboard" element={<DashboardPage />} />
-          <Route path="/admin/products" element={<ProductsManagementPage />} />
-          <Route path="/admin/categories" element={<CategoriesManagementPage />} />
-          <Route path="/admin/orders" element={<OrdersManagementPage />} />
-          <Route path="/admin/orders/:id" element={<OrderDetailPage />} />
-          <Route path="/admin/customers" element={<CustomersManagementPage />} />
-          <Route path="/admin/analytics" element={<AnalyticsPage />} />
-          <Route path="/admin/sales-locations" element={<SalesLocationsManagementPage />} />
-          <Route path="/admin/delivery-addresses" element={<DeliveryAddressesManagementPage />} />
+        {/* Admin Routes with AdminLayout - Protected by Admin Role */}
+        <Route element={<ProtectedAdminRoute />}>
+          <Route element={<AdminLayout />}>
+            <Route path="/admin" element={<DashboardPage />} />
+            <Route path="/admin/dashboard" element={<DashboardPage />} />
+            <Route path="/admin/products" element={<ProductsManagementPage />} />
+            <Route path="/admin/categories" element={<CategoriesManagementPage />} />
+            <Route path="/admin/orders" element={<OrdersManagementPage />} />
+            <Route path="/admin/orders/:id" element={<OrderDetailPage />} />
+            <Route path="/admin/customers" element={<CustomersManagementPage />} />
+            <Route path="/admin/analytics" element={<AnalyticsPage />} />
+            <Route path="/admin/sales-locations" element={<SalesLocationsManagementPage />} />
+            <Route path="/admin/delivery-addresses" element={<DeliveryAddressesManagementPage />} />
+          </Route>
         </Route>
 
         {/* Routes without Layout */}
