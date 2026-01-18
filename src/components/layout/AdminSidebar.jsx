@@ -1,4 +1,4 @@
-import { Link, useLocation } from 'react-router-dom'
+import { Link, useLocation, useNavigate } from 'react-router-dom'
 import { 
   LayoutDashboard, 
   Package, 
@@ -8,11 +8,22 @@ import {
   Users,
   Store,
   MapPin,
-  X
+  X,
+  Home,
+  LogOut
 } from 'lucide-react'
+import { useAuthStore } from '../../store/authStore'
 
 export default function AdminSidebar({ isOpen, onClose }) {
   const location = useLocation()
+  const navigate = useNavigate()
+  const { logout } = useAuthStore()
+
+  const handleLogout = () => {
+    logout()
+    navigate('/')
+    onClose()
+  }
 
   const menuItems = [
     {
@@ -100,7 +111,7 @@ export default function AdminSidebar({ isOpen, onClose }) {
         </div>
       
       {/* Navigation */}
-      <nav className="flex-1 px-3 py-4 space-y-1">
+      <nav className="flex-1 px-3 py-4 space-y-1 overflow-y-auto">
         {menuItems.map((item) => {
           const Icon = item.icon
           const active = isActive(item.path)
@@ -125,10 +136,20 @@ export default function AdminSidebar({ isOpen, onClose }) {
             </Link>
           )
         })}
+        
+        {/* Back to Customer Home */}
+        <Link
+          to="/"
+          onClick={onClose}
+          className="flex items-center space-x-3 px-3 py-2 rounded-lg transition-all text-gray-600 hover:bg-gray-100 mt-4 border-t border-gray-200 pt-4"
+        >
+          <Home className="w-5 h-5 text-gray-500" />
+          <span className="text-sm text-gray-700">กลับไปหน้าลูกค้า</span>
+        </Link>
       </nav>
 
       {/* User Section */}
-      <div className="p-4 border-t border-gray-200">
+      <div className="p-4 border-t border-gray-200 space-y-2">
         <div className="flex items-center space-x-3 px-3 py-2">
           <div className="w-7 h-7 rounded-full bg-linear-to-br from-gray-900 to-gray-700 flex items-center justify-center shadow-sm">
             <span className="text-white text-xs font-medium">A</span>
@@ -138,6 +159,15 @@ export default function AdminSidebar({ isOpen, onClose }) {
             <p className="text-[10px] text-gray-500 truncate">admin@iotstore.com</p>
           </div>
         </div>
+        
+        {/* Logout Button */}
+        <button
+          onClick={handleLogout}
+          className="w-full flex items-center space-x-3 px-3 py-2 rounded-lg transition-all text-red-600 hover:bg-red-50"
+        >
+          <LogOut className="w-5 h-5" />
+          <span className="text-sm font-medium">ออกจากระบบ</span>
+        </button>
       </div>
     </aside>
     </>
