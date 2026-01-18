@@ -138,12 +138,12 @@ export default function OrdersPage() {
   const getStatusText = (status) => {
     const normalized = normalizeStatus(status);
     const statusMap = {
-      'PENDING': 'Pending',
-      'PAID': 'Paid',
-      'CONFIRMED': 'Confirmed',
-      'SHIPPED': 'Shipped',
-      'DELIVERED': 'Delivered',
-      'CANCELLED': 'Cancelled',
+      'PENDING': 'รอดำเนินการ',
+      'PAID': 'ชำระเงินแล้ว',
+      'CONFIRMED': 'ยืนยันแล้ว',
+      'SHIPPED': 'กำลังจัดส่ง',
+      'DELIVERED': 'จัดส่งแล้ว',
+      'CANCELLED': 'ยกเลิก',
     };
     return statusMap[normalized] || status;
   };
@@ -289,7 +289,7 @@ export default function OrdersPage() {
             {order.address && (
               <div className="border-t border-slate-200/60 pt-6 mt-6">
                 <div className="text-sm">
-                  <div className="font-semibold mb-2 text-slate-800 text-xs uppercase tracking-wider">Shipping Address</div>
+                  <div className="font-semibold mb-2 text-slate-800 text-xs uppercase tracking-wider">ที่อยู่จัดส่ง</div>
                   <div className="text-slate-600 font-light leading-relaxed">
                     {order.address}
                     {order.province && `, ${order.province}`}
@@ -303,8 +303,8 @@ export default function OrdersPage() {
             {/* Actions */}
             <div className="border-t border-slate-200/60 pt-6 mt-6 flex gap-2.5 flex-wrap">
               <Link to={`/orders/${order.id}`}>
-                <button className="px-5 py-2.5 text-sm rounded-full bg-slate-100/90 text-slate-800 hover:bg-slate-200/90 transition-all duration-200 font-medium shadow-sm hover:shadow-md">
-                  View Details
+                  <button className="px-5 py-2.5 text-sm rounded-full bg-slate-100/90 text-slate-800 hover:bg-slate-200/90 transition-all duration-200 font-medium shadow-sm hover:shadow-md">
+                  ดูรายละเอียด
                 </button>
               </Link>
               
@@ -315,7 +315,7 @@ export default function OrdersPage() {
                   className="px-5 py-2.5 text-sm rounded-full bg-slate-100/90 text-blue-700 hover:bg-slate-200/90 transition-all duration-200 flex items-center gap-2 font-medium shadow-sm hover:shadow-md"
                 >
                   <Upload className="w-4 h-4" />
-                  Upload Payment
+                  อัปโหลดหลักฐานการชำระเงิน
                 </button>
               )}
               
@@ -323,13 +323,13 @@ export default function OrdersPage() {
               {(normalizeStatus(order.status) === 'PENDING') && order.paymentImage && (
                 <div className="px-5 py-2.5 text-sm rounded-full bg-slate-100/90 text-green-700 flex items-center gap-2 font-medium shadow-sm">
                   <CheckCircle className="w-4 h-4" />
-                  Payment Uploaded
+                  อัปโหลดหลักฐานแล้ว
                 </div>
               )}
               
               {normalizeStatus(order.status) === 'DELIVERED' && (
                 <button className="px-5 py-2.5 text-sm rounded-full bg-slate-100/90 text-slate-800 hover:bg-slate-200/90 transition-all duration-200 font-medium shadow-sm hover:shadow-md">
-                  Reorder
+                  สั่งซื้ออีกครั้ง
                 </button>
               )}
               {(normalizeStatus(order.status) === 'PENDING') && (
@@ -337,7 +337,7 @@ export default function OrdersPage() {
                   onClick={() => setOrderToCancel(order)}
                   className="px-5 py-2.5 text-sm rounded-full bg-slate-100/90 text-red-600 hover:bg-slate-200/90 transition-all duration-200 font-medium shadow-sm hover:shadow-md"
                 >
-                  Cancel Order
+                  ยกเลิกออเดอร์
                 </button>
               )}
             </div>
@@ -364,8 +364,8 @@ export default function OrdersPage() {
                     <AlertTriangle className="w-6 h-6 text-red-600" />
                   </div>
                   <div>
-                    <h2 className="text-xl font-semibold text-slate-800 tracking-tight">Cancel Order</h2>
-                    <p className="text-xs text-slate-600 mt-1 font-light">This action cannot be undone</p>
+                    <h2 className="text-xl font-semibold text-slate-800 tracking-tight">ยกเลิกออเดอร์</h2>
+                    <p className="text-xs text-slate-600 mt-1 font-light">การกระทำนี้ไม่สามารถยกเลิกได้</p>
                   </div>
                 </div>
                 {!cancelling && (
@@ -381,21 +381,21 @@ export default function OrdersPage() {
               {/* Content */}
               <div className="px-8 py-6">
                 <p className="text-sm text-slate-700 mb-6 font-light leading-relaxed">
-                  Are you sure you want to cancel order <span className="font-semibold text-slate-800">#{orderToCancel.id.slice(0, 8)}</span>?
+                  คุณแน่ใจหรือไม่ว่าต้องการยกเลิกออเดอร์ <span className="font-semibold text-slate-800">#{orderToCancel.id.slice(0, 8)}</span>?
                 </p>
                 
                 <div className="bg-slate-50/90 rounded-2xl p-5 mb-5 border border-slate-200/60">
                   <div className="space-y-3">
                     <div className="flex justify-between text-sm">
-                      <span className="text-slate-600 font-light">Order Total</span>
+                      <span className="text-slate-600 font-light">ยอดรวมออเดอร์</span>
                       <span className="font-semibold text-slate-800">{formatPrice(orderToCancel.totalAmount)}</span>
                     </div>
                     <div className="flex justify-between text-sm">
-                      <span className="text-slate-600 font-light">Items</span>
-                      <span className="text-slate-800 font-medium">{orderToCancel.items?.length || 0} item{orderToCancel.items?.length !== 1 ? 's' : ''}</span>
+                      <span className="text-slate-600 font-light">รายการ</span>
+                      <span className="text-slate-800 font-medium">{orderToCancel.items?.length || 0} รายการ</span>
                     </div>
                     <div className="flex justify-between text-sm">
-                      <span className="text-slate-600 font-light">Order Date</span>
+                      <span className="text-slate-600 font-light">วันที่สั่งซื้อ</span>
                       <span className="text-slate-800 font-medium">{formatDate(orderToCancel.createdAt)}</span>
                     </div>
                   </div>
@@ -403,7 +403,7 @@ export default function OrdersPage() {
 
                 <div className="bg-orange-50/90 border border-orange-200/60 rounded-2xl p-4">
                   <p className="text-xs text-orange-800 font-light leading-relaxed">
-                    <span className="font-semibold">Note:</span> You can only cancel orders with status "Pending". Once cancelled, this order cannot be restored.
+                    <span className="font-semibold">หมายเหตุ:</span> คุณสามารถยกเลิกได้เฉพาะออเดอร์ที่มีสถานะ "Pending" เท่านั้น เมื่อยกเลิกแล้วจะไม่สามารถกู้คืนได้
                   </p>
                 </div>
               </div>
@@ -416,7 +416,7 @@ export default function OrdersPage() {
                   className="px-6 py-2.5 text-sm border border-slate-300/60 rounded-full hover:bg-slate-50 transition-all duration-200 font-medium shadow-sm hover:shadow-md"
                   disabled={cancelling}
                 >
-                  Keep Order
+                  เก็บออเดอร์ไว้
                 </button>
                 <button
                   type="button"
@@ -427,12 +427,12 @@ export default function OrdersPage() {
                   {cancelling ? (
                     <>
                       <Loader2 className="w-4 h-4 animate-spin" />
-                      Cancelling...
+                      กำลังยกเลิก...
                     </>
                   ) : (
                     <>
                       <XCircle className="w-4 h-4" />
-                      Cancel Order
+                      ยกเลิกออเดอร์
                     </>
                   )}
                 </button>
