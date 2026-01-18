@@ -6,50 +6,42 @@ export default function Stats() {
       icon: Package,
       value: '1000+',
       label: 'Products',
-      color: 'text-blue-600',
-      bgColor: 'bg-blue-100',
     },
     {
       icon: Users,
       value: '5000+',
       label: 'Happy Customers',
-      color: 'text-green-600',
-      bgColor: 'bg-green-100',
     },
     {
       icon: ShoppingBag,
       value: '10000+',
       label: 'Orders Delivered',
-      color: 'text-purple-600',
-      bgColor: 'bg-purple-100',
     },
     {
       icon: TrendingUp,
       value: '95%',
       label: 'Satisfaction Rate',
-      color: 'text-orange-600',
-      bgColor: 'bg-orange-100',
     },
   ];
 
   return (
-    <section className="py-20 bg-white">
-      <div className="max-w-7xl mx-auto px-6">
-        <div className="grid grid-cols-2 md:grid-cols-4 gap-8">
+    <section className="py-24 bg-white border-t border-gray-100">
+      <div className="max-w-7xl mx-auto px-6 sm:px-8 lg:px-12">
+        <div className="grid grid-cols-2 md:grid-cols-4 gap-8 md:gap-12">
           {stats.map((stat, index) => {
             const Icon = stat.icon;
             return (
               <div
                 key={index}
-                className="text-center"
+                className="text-center group"
               >
-                <div className="inline-flex items-center justify-center w-14 h-14 rounded-2xl bg-gray-100 mb-4">
+                <div className="inline-flex items-center justify-center w-16 h-16 rounded-2xl bg-gray-50 mb-6 group-hover:bg-gray-100 transition-colors duration-300">
                   <Icon className="w-7 h-7 text-gray-700" />
                 </div>
-                <div className="text-4xl font-semibold text-gray-900 mb-2">
+                <div className="text-4xl md:text-5xl font-semibold text-gray-900 mb-2 tracking-tight">
                   {stat.value}
                 </div>
-                <div className="text-gray-500 text-sm">{stat.label}</div>
+                <div className="text-gray-600 text-sm font-medium">{stat.label}</div>
               </div>
             );
           })}

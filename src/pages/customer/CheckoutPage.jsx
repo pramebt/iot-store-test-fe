@@ -4,10 +4,16 @@ import { useCartStore } from '../../store/cartStore';
 import { useAuthStore } from '../../store/authStore';
 import { ordersService } from '../../services/orders.service';
 import { shippingService } from '../../services/shipping.service';
-import AddressSelector from '../../components/common/AddressSelector';
-import { formatPrice } from '../../utils/formatPrice';
-import { ShoppingBag, ImageIcon, X, CheckCircle2, MapPin, Truck } from 'lucide-react';
+import { salesLocationsService } from '../../services/salesLocations.service';
+import { authService } from '../../services/auth.service';
+import ShippingInformationForm from '../../components/customer/checkout/ShippingInformationForm';
+import OrderSummaryCard from '../../components/customer/checkout/OrderSummaryCard';
+import PaymentProofUpload from '../../components/customer/checkout/PaymentProofUpload';
+import { ShoppingBag, Loader2 } from 'lucide-react';
 import { thailandAddress } from '../../utils/thailandAddress';
+import PageContainer from '../../components/common/PageContainer';
+import PageHeader from '../../components/common/PageHeader';
+import toast from '../../utils/toast';
 
 export default function CheckoutPage() {
   const navigate = useNavigate();
@@ -29,9 +35,13 @@ export default function CheckoutPage() {
   const [selectedFile, setSelectedFile] = useState(null);
   const [previewUrl, setPreviewUrl] = useState(null);
   const [loading, setLoading] = useState(false);
-  const [error, setError] = useState('');
   const [shippingInfo, setShippingInfo] = useState(null);
   const [calculatingShipping, setCalculatingShipping] = useState(false);
+  const [selectedSalesLocation, setSelectedSalesLocation] = useState(null);
+
+  // Check if In-Store Order (has selectedLocation)
+  const hasSelectedLocation = items.some(item => item.selectedLocationId && 
+    (item.selectedLocationType === 'STORE' || item.selectedLocationType === 'IOT_POINT'));
 
   const handleChange = (e) => {
     const { name, value } = e.target;
@@ -48,9 +58,125 @@ export default function CheckoutPage() {
     }));
   };
 
+  const handleUseProfileAddress = async () => {
+    if (!user) {
+      toast.error('กรุณาเข้าสู่ระบบเพื่อใช้ที่อยู่จากโปรไฟล์');
+      return;
+    }
+
+    try {
+      // Fetch latest profile data from API
+      const profileData = await authService.getCurrentUser();
+      console.log('Profile data from API:', profileData);
+      
+      // Check if profile has address data
+      if (!profileData.address && !profileData.phone && !profileData.province) {
+        toast.error('โปรไฟล์ของคุณยังไม่มีข้อมูลที่อยู่ กรุณาไปที่หน้า Profile เพื่อเพิ่มข้อมูลที่อยู่');
+        return;
+      }
+      
+      // Convert province/district names to IDs for AddressSelector
+      let provinceId = null;
+      let districtId = null;
+      let subDistrictId = null;
+      
+      if (profileData.province) {
+        // Search province by name (supports both Thai and English)
+        const provinces = thailandAddress.searchProvince(profileData.province);
+        console.log('Searching for province:', profileData.province, 'Found:', provinces);
+        if (provinces.length > 0) {
+          provinceId = provinces[0].id;
+          
+          // Find district by name
+          if (profileData.district && provinceId) {
+            const districts = thailandAddress.searchDistrict(profileData.district, provinceId);
+            console.log('Searching for district:', profileData.district, 'Found:', districts);
+            if (districts.length > 0) {
+              districtId = districts[0].id;
+              
+              // Find sub-district by postal code
+              if (profileData.postalCode && districtId) {
+                const subDistricts = thailandAddress.getSubDistrictsByDistrict(districtId);
+                const subDistrict = subDistricts.find(sd => 
+                  sd.zipCode === profileData.postalCode || 
+                  sd.zipCode === parseInt(profileData.postalCode)
+                );
+                console.log('Searching for postal code:', profileData.postalCode, 'Found sub-districts:', subDistricts.length);
+                if (subDistrict) {
+                  subDistrictId = subDistrict.id;
+                }
+              }
+            }
+          }
+        } else {
+          console.warn('Province not found:', profileData.province);
+        }
+      }
+
+      const newFormData = {
+        ...formData,
+        address: profileData.address || formData.address,
+        phone: profileData.phone || formData.phone,
+        addressData: {
+          provinceId: provinceId || formData.addressData.provinceId,
+          districtId: districtId || formData.addressData.districtId,
+          subDistrictId: subDistrictId || formData.addressData.subDistrictId,
+          zipCode: profileData.postalCode || formData.addressData.zipCode,
+        },
+      };
+
+      console.log('Updating form data:', {
+        old: formData,
+        new: newFormData,
+        profile: profileData
+      });
+      
+      // Update form data with profile information
+      setFormData(newFormData);
+
+      // Show success toast
+      toast.success('โหลดที่อยู่จากโปรไฟล์สำเร็จ');
+    } catch (err) {
+      console.error('Error loading profile address:', err);
+      toast.error(err.response?.data?.message || 'ไม่สามารถโหลดที่อยู่จากโปรไฟล์ได้ กรุณาลองใหม่อีกครั้ง');
+    }
+  };
+
+  // Load selected SalesLocation info when items change
+  useEffect(() => {
+    const loadSelectedSalesLocation = async () => {
+      // Check if all items have selectedLocationId (In-Store Order)
+      const hasLocation = items.some(item => item.selectedLocationId && 
+        (item.selectedLocationType === 'STORE' || item.selectedLocationType === 'IOT_POINT'));
+      
+      if (hasLocation) {
+        // Get the selected location ID from items
+        const selectedLocationId = items
+          .filter(item => item.selectedLocationId && 
+            (item.selectedLocationType === 'STORE' || item.selectedLocationType === 'IOT_POINT'))
+          .map(item => item.selectedLocationId)[0];
+        
+        if (selectedLocationId) {
+          try {
+            const salesLocation = await salesLocationsService.getById(selectedLocationId);
+            setSelectedSalesLocation(salesLocation);
+          } catch (error) {
+            console.error('Failed to load sales location:', error);
+            setSelectedSalesLocation(null);
+          }
+        }
+      } else {
+        setSelectedSalesLocation(null);
+      }
+    };
+
+    loadSelectedSalesLocation();
+  }, [items]);
+
   // Calculate shipping when province changes
   useEffect(() => {
     const calculateShipping = async () => {
+      // Both In-Store Order and Online Order need province for shipping calculation
       if (!formData.addressData.provinceId || items.length === 0) {
         setShippingInfo(null);
         return;
@@ -76,7 +202,8 @@ export default function CheckoutPage() {
         console.log('Calculating shipping with:', {
           items: orderItems,
           province: provinceData.name_th,
-          provinceData
+          provinceData,
+          isInStoreOrder: hasSelectedLocation
         });
 
         if (!provinceData.name_th) {
@@ -89,6 +216,33 @@ export default function CheckoutPage() {
           return;
         }
 
+        // For In-Store Order: shipping from selected SalesLocation
+        // For Online Order: shipping from selected DeliveryAddress
+        if (hasSelectedLocation && selectedSalesLocation) {
+          // In-Store Order: Calculate shipping from SalesLocation to customer address
+          // Use the same shipping calculation logic (from SalesLocation province to customer province)
+          const salesLocationProvince = selectedSalesLocation.province;
+          const customerProvince = provinceData.name_th;
+          
+          // Simple shipping fee calculation (same province = 50, different = 100)
+          const shippingFee = salesLocationProvince === customerProvince ? 50 : 100;
+          const estimatedShipping = salesLocationProvince === customerProvince ? '1-2 วัน' : '3-5 วัน';
+          
+          setShippingInfo({
+            salesLocation: {
+              id: selectedSalesLocation.id,
+              name: selectedSalesLocation.name,
+              code: selectedSalesLocation.code,
+              province: selectedSalesLocation.province,
+            },
+            deliveryAddress: null, // In-Store Order doesn't use DeliveryAddress
+            shippingFee,
+            estimatedShipping,
+          });
+          return;
+        }
+
+        // Online Order: Calculate shipping from DeliveryAddress
         console.log('Sending to shipping service:', {
           orderItems,
           province: provinceData.name_th,
@@ -118,11 +272,11 @@ export default function CheckoutPage() {
         setError('');
         
         if (errorMessage && errorMessage.includes('No sales location')) {
-          setError('ไม่พบสาขาที่มีสินค้าครบทุกรายการ กรุณาตรวจสอบสต็อกสินค้าหรือติดต่อผู้ดูแลระบบ');
+          toast.error('ไม่พบสาขาที่มีสินค้าครบทุกรายการ กรุณาตรวจสอบสต็อกสินค้าหรือติดต่อผู้ดูแลระบบ');
         } else if (errorMessage && errorMessage.includes('No active delivery addresses')) {
-          setError('ไม่พบที่อยู่จัดส่งที่พร้อมใช้งาน กรุณาติดต่อผู้ดูแลระบบ');
+          toast.error('ไม่พบที่อยู่จัดส่งที่พร้อมใช้งาน กรุณาติดต่อผู้ดูแลระบบ');
         } else {
-          setError(`ไม่สามารถคำนวณค่าจัดส่งได้: ${errorMessage}`);
+          toast.error(`ไม่สามารถคำนวณค่าจัดส่งได้: ${errorMessage}`);
         }
         
         // Set default shipping if calculation fails (but still allow checkout)
@@ -132,33 +286,30 @@ export default function CheckoutPage() {
           shippingFee: 50,
           estimatedShipping: '3-5 วัน',
         });
-        
-        // Note: Error is already set above, so user will see the message
       } finally {
         setCalculatingShipping(false);
       }
     };
 
     calculateShipping();
-  }, [formData.addressData.provinceId, items]);
+  }, [formData.addressData.provinceId, items, selectedSalesLocation]);
 
   const handleFileSelect = (e) => {
     const file = e.target.files[0];
     if (file) {
       // Validate file type
       if (!file.type.startsWith('image/')) {
-        setError('กรุณาเลือกไฟล์รูปภาพ');
+        toast.error('กรุณาเลือกไฟล์รูปภาพ');
         return;
       }
 
       // Validate file size (max 5MB)
       if (file.size > 5 * 1024 * 1024) {
-        setError('ขนาดไฟล์ต้องไม่เกิน 5MB');
+        toast.error('ขนาดไฟล์ต้องไม่เกิน 5MB');
         return;
       }
 
       setSelectedFile(file);
-      setError('');
 
       // Create preview
       const reader = new FileReader();
@@ -171,20 +322,20 @@ export default function CheckoutPage() {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-    setError('');
     setLoading(true);
 
     try {
       // Validate required fields
+      // Both In-Store Order and Online Order need address, phone, and province (for shipping)
       if (!formData.address || !formData.phone || !formData.addressData.provinceId) {
-        setError('กรุณากรอกข้อมูลที่จำเป็นให้ครบถ้วน');
+        toast.error('กรุณากรอกข้อมูลที่จำเป็นให้ครบถ้วน (ที่อยู่, เบอร์โทร, จังหวัด)');
         setLoading(false);
         return;
       }
 
       // Payment slip is optional - order will be created as PENDING
 
-      // Get province name from ID
+      // Get province name from ID (both In-Store and Online Order need this for shipping)
       const provinceData = thailandAddress.getProvinceById(formData.addressData.provinceId);
       const districtData = formData.addressData.districtId 
         ? thailandAddress.getDistrictById(formData.addressData.districtId)
@@ -216,15 +367,15 @@ export default function CheckoutPage() {
         ...(selectedLocation && (selectedLocation.type === 'STORE' || selectedLocation.type === 'IOT_POINT') && {
           salesLocationId: selectedLocation.id
         }),
-        // warehouseId (Delivery Address) will be selected automatically by backend if salesLocationId is not provided
-        // Delivery Address = สถานที่ส่งสินค้า → ส่งจาก Delivery Address
-        address: formData.address,
+        // Delivery Address will be selected automatically by backend if salesLocationId is not provided
+        // Delivery Address = สถานที่ส่งสินค้า → ส่งจาก Delivery Address (Online Order เท่านั้น)
+        address: formData.address, // Both In-Store and Online Order need address
         phone: formData.phone,
-        province: provinceData?.name_th || '',
+        province: provinceData?.name_th || '', // Both need province for shipping
         district: districtData?.name_th || null,
         postalCode: formData.addressData.zipCode || null,
         note: formData.note || null,
-        shippingFee: shippingInfo?.shippingFee || 50,
+        shippingFee: shippingInfo?.shippingFee || 50, // Both have shipping fee
       };
 
       // Create order (status will be PENDING by default)
@@ -256,18 +407,21 @@ export default function CheckoutPage() {
       // Clear cart
       clearCart();
       
-      // Navigate to orders page with success message
+      // Show success toast
+      toast.success(selectedFile 
+        ? 'สั่งซื้อและอัปโหลดหลักฐานการชำระเงินสำเร็จ!' 
+        : 'สั่งซื้อสำเร็จ! กรุณาอัปโหลดหลักฐานการชำระเงินในภายหลัง'
+      );
+      
+      // Navigate to orders page
       navigate('/orders', { 
         state: { 
           newOrderId: order.id,
-          message: selectedFile 
-            ? 'สั่งซื้อและอัปโหลดหลักฐานการชำระเงินสำเร็จ!' 
-            : 'สั่งซื้อสำเร็จ! กรุณาอัปโหลดหลักฐานการชำระเงินในภายหลัง'
         }
       });
     } catch (err) {
       console.error('Checkout error:', err);
-      setError(err.response?.data?.message || 'เกิดข้อผิดพลาดในการสั่งซื้อ');
+      toast.error(err.response?.data?.message || 'เกิดข้อผิดพลาดในการสั่งซื้อ');
     } finally {
       setLoading(false);
     }
@@ -275,8 +429,8 @@ export default function CheckoutPage() {
 
   if (items.length === 0) {
     return (
-      <div className="min-h-screen bg-white flex items-center justify-center px-6">
-        <div className="max-w-md text-center">
+      <PageContainer>
+        <div className="max-w-md mx-auto text-center py-20">
           <div className="w-24 h-24 bg-gray-50 rounded-full flex items-center justify-center mx-auto mb-6">
             <ShoppingBag className="w-12 h-12 text-gray-300" />
           </div>
@@ -291,170 +445,44 @@ export default function CheckoutPage() {
             Continue Shopping
           </button>
         </div>
-      </div>
+      </PageContainer>
     );
   }
 
   const subtotal = getTotal();
+  // Both In-Store and Online Order have shipping fee
   const shipping = shippingInfo?.shippingFee || 50;
   const total = subtotal + shipping;
 
   return (
-    <div className="min-h-screen bg-gray-50">
-      {/* Header */}
-      <div className="bg-white border-b border-gray-200">
-        <div className="max-w-7xl mx-auto px-6 py-6">
-          <h1 className="text-3xl font-semibold text-gray-900">Checkout</h1>
-        </div>
-      </div>
-
-      <div className="max-w-7xl mx-auto px-6 py-8">
-        {error && (
-          <div className="mb-6 p-4 bg-red-50 border border-red-200 rounded-xl">
-            <p className="text-sm text-red-600">{error}</p>
-          </div>
-        )}
+    <PageContainer>
+      <PageHeader 
+        title="Checkout"
+        subtitle="Complete your order"
+      />
 
         <form onSubmit={handleSubmit}>
           <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
             {/* Left Column - Form */}
             <div className="lg:col-span-2 space-y-6">
-              
-              {/* Shipping Information Card */}
-              <div className="bg-white rounded-2xl p-6 shadow-sm">
-                <h2 className="text-xl font-semibold mb-6 text-gray-900">Shipping Information</h2>
-                
-                <div className="space-y-5">
-                  {/* Address */}
-                  <div>
-                    <label className="block text-sm font-medium text-gray-900 mb-2">
-                      Street Address
-                    </label>
-                    <textarea
-                      name="address"
-                      value={formData.address}
-                      onChange={handleChange}
-                      required
-                      rows={3}
-                      className="w-full px-4 py-3 bg-white border border-gray-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-black focus:border-transparent text-gray-900 resize-none"
-                      placeholder="Enter your address"
-                    />
-                  </div>
+              <ShippingInformationForm
+                formData={formData}
+                hasSelectedLocation={hasSelectedLocation}
+                selectedSalesLocation={selectedSalesLocation}
+                onFormChange={handleChange}
+                onAddressChange={handleAddressChange}
+                onUseProfileAddress={handleUseProfileAddress}
+              />
 
-                  {/* Address Selector */}
-                  <div>
-                    <AddressSelector
-                      value={formData.addressData}
-                      onChange={handleAddressChange}
-                      required={true}
-                      showLabels={true}
-                    />
-                  </div>
-
-                  {/* Phone */}
-                  <div>
-                    <label className="block text-sm font-medium text-gray-900 mb-2">
-                      Phone Number
-                    </label>
-                    <input
-                      type="tel"
-                      name="phone"
-                      value={formData.phone}
-                      onChange={handleChange}
-                      required
-                      placeholder="0812345678"
-                      className="w-full px-4 py-3 bg-white border border-gray-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-black focus:border-transparent text-gray-900"
-                    />
-                  </div>
-
-                  {/* Note */}
-                  <div>
-                    <label className="block text-sm font-medium text-gray-900 mb-2">
-                      Notes (Optional)
-                    </label>
-                    <textarea
-                      name="note"
-                      value={formData.note}
-                      onChange={handleChange}
-                      rows={2}
-                      className="w-full px-4 py-3 bg-white border border-gray-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-black focus:border-transparent text-gray-900 resize-none"
-                      placeholder="Add delivery instructions..."
-                    />
-                  </div>
-                </div>
-              </div>
-
-              {/* Payment Proof Card */}
-              <div className="bg-white rounded-2xl p-6 shadow-sm">
-                <h2 className="text-xl font-semibold mb-2 text-gray-900">Payment Proof</h2>
-                <p className="text-sm text-gray-500 mb-6">
-                  (Optional) คุณสามารถอัปโหลดหลักฐานการชำระเงินได้ในภายหลัง
-                </p>
-                
-                <div>
-                  <label className="block text-sm font-medium text-gray-900 mb-3">
-                    Upload Payment Slip
-                  </label>
-                  
-                  <div className="relative">
-                    <label className="flex flex-col items-center justify-center w-full h-64 border-2 border-dashed border-gray-300 rounded-2xl cursor-pointer hover:border-gray-400 transition-all bg-gray-50 hover:bg-gray-100">
-                      {previewUrl ? (
-                        <div className="relative w-full h-full p-4">
-                          <img
-                            src={previewUrl}
-                            alt="Preview"
-                            className="w-full h-full object-contain rounded-xl"
-                          />
-                          <button
-                            type="button"
-                            onClick={(e) => {
-                              e.preventDefault();
-                              setSelectedFile(null);
-                              setPreviewUrl(null);
-                            }}
-                            className="absolute top-6 right-6 p-2.5 bg-black/80 backdrop-blur text-white rounded-full hover:bg-black transition-all"
-                          >
-                            <X className="w-4 h-4" />
-                          </button>
-                        </div>
-                      ) : (
-                        <div className="flex flex-col items-center justify-center py-8">
-                          <div className="w-14 h-14 bg-white rounded-full flex items-center justify-center mb-3 shadow-sm">
-                            <ImageIcon className="w-7 h-7 text-gray-400" />
-                          </div>
-                          <p className="text-sm font-medium text-gray-900 mb-1">
-                            Drop your payment slip here
-                          </p>
-                          <p className="text-xs text-gray-500">
-                            or click to browse
-                          </p>
-                          <p className="text-xs text-gray-400 mt-2">
-                            PNG, JPG up to 5MB
-                          </p>
-                        </div>
-                      )}
-                      <input
-                        type="file"
-                        accept="image/*"
-                        onChange={handleFileSelect}
-                        className="hidden"
-                      />
-                    </label>
-                  </div>
-
-                  {selectedFile && (
-                    <div className="mt-3 p-3 bg-green-50 border border-green-200 rounded-xl flex items-center gap-3">
-                      <CheckCircle2 className="w-5 h-5 text-green-600 shrink-0" />
-                      <div className="flex-1 min-w-0">
-                        <p className="text-sm font-medium text-green-900 truncate">{selectedFile.name}</p>
-                        <p className="text-xs text-green-700 mt-0.5">
-                          {(selectedFile.size / 1024 / 1024).toFixed(2)} MB
-                        </p>
-                      </div>
-                    </div>
-                  )}
-                </div>
-              </div>
+              <PaymentProofUpload
+                selectedFile={selectedFile}
+                previewUrl={previewUrl}
+                onFileSelect={handleFileSelect}
+                onFileRemove={() => {
+                  setSelectedFile(null);
+                  setPreviewUrl(null);
+                }}
+              />
 
               {/* Action Buttons - Mobile */}
               <div className="flex flex-col sm:flex-row gap-3 lg:hidden">
@@ -472,14 +500,11 @@ export default function CheckoutPage() {
                 >
                   {loading ? (
                     <span className="flex items-center justify-center gap-2">
-                      <svg className="animate-spin h-5 w-5" viewBox="0 0 24 24">
-                        <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" fill="none" />
-                        <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z" />
-                      </svg>
-                      Processing...
+                      <Loader2 className="w-5 h-5 animate-spin" />
+                      กำลังดำเนินการ...
                     </span>
                   ) : (
-                    'Complete Order'
+                    'ยืนยันการสั่งซื้อ'
                   )}
                 </button>
               </div>
@@ -487,119 +512,20 @@ export default function CheckoutPage() {
 
             {/* Right Column - Order Summary (Sticky) */}
             <div className="lg:col-span-1">
-              <div className="sticky top-6">
-                <div className="bg-white rounded-2xl p-6 shadow-sm">
-                  <h2 className="text-xl font-semibold mb-6 text-gray-900">Order Summary</h2>
-                  
-                  {/* Items */}
-                  <div className="space-y-4 mb-6">
-                    {items.map(item => (
-                      <div key={item.id} className="flex gap-3">
-                        <div className="relative w-16 h-16 bg-gray-100 rounded-xl overflow-hidden shrink-0">
-                          <img
-                            src={item.imageUrl || '/placeholder.png'}
-                            alt={item.name}
-                            className="w-full h-full object-cover"
-                          />
-                          <div className="absolute -top-1 -right-1 w-5 h-5 bg-gray-900 text-white rounded-full flex items-center justify-center text-xs font-medium">
-                            {item.quantity}
-                          </div>
-                        </div>
-                        <div className="flex-1 min-w-0">
-                          <h3 className="font-medium text-sm text-gray-900 truncate">{item.name}</h3>
-                          <p className="text-xs text-gray-500 mt-0.5">
-                            {formatPrice(item.price)}
-                          </p>
-                        </div>
-                        <div className="text-right shrink-0">
-                          <p className="font-semibold text-sm text-gray-900">
-                            {formatPrice(item.price * item.quantity)}
-                          </p>
-                        </div>
-                      </div>
-                    ))}
-                  </div>
-
-                  {/* Shipping Info */}
-                  {shippingInfo?.deliveryAddress && (
-                    <div className="mb-4 p-3 bg-blue-50 border border-blue-200 rounded-lg">
-                      <div className="flex items-start gap-2 mb-2">
-                        <MapPin className="w-4 h-4 text-blue-600 mt-0.5" />
-                        <div className="flex-1">
-                          <p className="text-xs font-medium text-blue-900">ส่งจาก</p>
-                          <p className="text-sm text-blue-800">{shippingInfo.deliveryAddress.name}</p>
-                          <p className="text-xs text-blue-600">{shippingInfo.deliveryAddress.province}</p>
-                        </div>
-                      </div>
-                      {shippingInfo.estimatedShipping && (
-                        <div className="flex items-center gap-2 mt-2">
-                          <Truck className="w-4 h-4 text-blue-600" />
-                          <p className="text-xs text-blue-700">
-                            ระยะเวลาจัดส่งประมาณ: {shippingInfo.estimatedShipping}
-                          </p>
-                        </div>
-                      )}
-                    </div>
-                  )}
-
-                  {/* Totals */}
-                  <div className="border-t border-gray-200 pt-4 space-y-3">
-                    <div className="flex justify-between text-sm">
-                      <span className="text-gray-600">Subtotal</span>
-                      <span className="text-gray-900 font-medium">{formatPrice(subtotal)}</span>
-                    </div>
-                    <div className="flex justify-between text-sm">
-                      <span className="text-gray-600">
-                        Shipping
-                        {calculatingShipping && (
-                          <span className="ml-2 text-xs text-gray-400">(calculating...)</span>
-                        )}
-                      </span>
-                      <span className="text-gray-900 font-medium">
-                        {calculatingShipping ? '...' : formatPrice(shipping)}
-                      </span>
-                    </div>
-                    <div className="flex justify-between text-base font-semibold border-t border-gray-200 pt-4">
-                      <span className="text-gray-900">Total</span>
-                      <span className="text-gray-900">
-                        {calculatingShipping ? '...' : formatPrice(total)}
-                      </span>
-                    </div>
-                  </div>
-
-                  {/* Action Buttons - Desktop */}
-                  <div className="hidden lg:flex flex-col gap-3 mt-6 pt-6 border-t border-gray-200">
-                    <button
-                      type="submit"
-                      disabled={loading}
-                      className="w-full px-6 py-3.5 bg-black text-white rounded-xl hover:bg-gray-800 transition-all text-sm font-medium disabled:opacity-40 disabled:cursor-not-allowed"
-                    >
-                      {loading ? (
-                        <span className="flex items-center justify-center gap-2">
-                          <svg className="animate-spin h-5 w-5" viewBox="0 0 24 24">
-                            <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" fill="none" />
-                            <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z" />
-                          </svg>
-                          Processing...
-                        </span>
-                      ) : (
-                        'Complete Order'
-                      )}
-                    </button>
-                    <button
-                      type="button"
-                      onClick={() => navigate('/cart')}
-                      className="w-full px-6 py-3.5 text-gray-900 bg-white border border-gray-300 rounded-xl hover:bg-gray-50 transition-all text-sm font-medium"
-                    >
-                      Back to Cart
-                    </button>
-                  </div>
-                </div>
-              </div>
+              <OrderSummaryCard
+                items={items}
+                subtotal={subtotal}
+                shipping={shipping}
+                total={total}
+                shippingInfo={shippingInfo}
+                hasSelectedLocation={hasSelectedLocation}
+                calculatingShipping={calculatingShipping}
+                loading={loading}
+                onBackToCart={() => navigate('/cart')}
+              />
             </div>
           </div>
         </form>
-      </div>
-    </div>
+    </PageContainer>
   );
 }

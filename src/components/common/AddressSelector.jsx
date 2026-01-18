@@ -96,6 +96,37 @@ export default function AddressSelector({
     }
   }, [selectedSubDistrict, subDistricts]);
 
+  // Sync internal state with value prop when value changes from outside
+  useEffect(() => {
+    if (value.provinceId !== undefined && value.provinceId !== null) {
+      const provinceIdStr = value.provinceId.toString();
+      if (provinceIdStr !== selectedProvince) {
+        setSelectedProvince(provinceIdStr);
+      }
+    }
+    
+    if (value.districtId !== undefined && value.districtId !== null) {
+      const districtIdStr = value.districtId.toString();
+      if (districtIdStr !== selectedDistrict) {
+        setSelectedDistrict(districtIdStr);
+      }
+    }
+    
+    if (value.subDistrictId !== undefined && value.subDistrictId !== null) {
+      const subDistrictIdStr = value.subDistrictId.toString();
+      if (subDistrictIdStr !== selectedSubDistrict) {
+        setSelectedSubDistrict(subDistrictIdStr);
+      }
+    }
+    
+    if (value.zipCode !== undefined && value.zipCode !== null) {
+      const zipCodeStr = value.zipCode.toString();
+      if (zipCodeStr !== zipCode) {
+        setZipCode(zipCodeStr);
+      }
+    }
+  }, [value.provinceId, value.districtId, value.subDistrictId, value.zipCode]);
+
   // ส่งค่ากลับไปยัง parent component
   useEffect(() => {
     if (onChange) {

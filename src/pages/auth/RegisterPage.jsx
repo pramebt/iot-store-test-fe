@@ -2,6 +2,7 @@ import { useState } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
 import { useAuthStore } from '../../store/authStore';
 import { authService } from '../../services/auth.service';
+import toast from '../../utils/toast';
 
 export default function RegisterPage() {
   const navigate = useNavigate();
@@ -13,22 +14,20 @@ export default function RegisterPage() {
     confirmPassword: '',
     phone: ''
   });
-  const [error, setError] = useState('');
   const [loading, setLoading] = useState(false);
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-    setError('');
 
     // Validate passwords match
     if (formData.password !== formData.confirmPassword) {
-      setError('Passwords do not match');
+      toast.error('Passwords do not match');
       return;
     }
 
     // Validate password length
     if (formData.password.length < 6) {
-      setError('Password must be at least 6 characters');
+      toast.error('Password must be at least 6 characters');
       return;
     }
 
@@ -53,13 +52,15 @@ export default function RegisterPage() {
       // Auto-login after successful registration
       if (response.user && response.token) {
         setAuth(response.user, response.token);
-        navigate('/');
+        toast.success('Registration successful!');
+        navigate('/login-loading');
       } else {
         // If no token returned, redirect to login
-        navigate('/login', { state: { message: 'Registration successful! Please login.' } });
+        toast.success('Registration successful! Please login.');
+        navigate('/login');
       }
     } catch (err) {
-      setError(err.response?.data?.message || err.message || 'Registration failed');
+      toast.error(err.response?.data?.message || err.message || 'Registration failed');
     } finally {
       setLoading(false);
     }
@@ -82,12 +83,6 @@ export default function RegisterPage() {
           <h1 className="text-4xl font-semibold mb-2 text-gray-900">Create account</h1>
           <p className="text-gray-500">Sign up to get started</p>
         </div>
-        
-        {error && (
-          <div className="bg-red-50 border border-red-200 text-red-700 px-4 py-3 rounded-xl mb-6 text-sm">
-            {error}
-          </div>
-        )}
 
         <form onSubmit={handleSubmit} className="space-y-5">
           {/* Name */}

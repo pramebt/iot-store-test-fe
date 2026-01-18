@@ -1,21 +1,21 @@
 import { useEffect, useState } from 'react';
 import { useParams, useNavigate, Link } from 'react-router-dom';
 import { ordersService } from '../../services/orders.service';
-import { formatPrice } from '../../utils/formatPrice';
 import { formatDate } from '../../utils/formatDate';
-import PaymentUploadModal from '../../components/customer/orders/PaymentUploadModal';
+import {
+  OrderItemsList,
+  DeliveryInfoSection,
+  OrderStatusCard
+} from '../../components/customer/orders/CustomerOrderSections';
+import CustomerPaymentUpload from '../../components/customer/orders/CustomerPaymentUpload';
 import { 
   ArrowLeft, 
   Package, 
-  MapPin, 
-  Phone,
   Clock,
   CheckCircle,
   XCircle,
   Truck,
-  Upload,
-  FileText,
-  Store
+  Loader2
 } from 'lucide-react';
 
 export default function CustomerOrderDetailPage() {
@@ -24,7 +24,6 @@ export default function CustomerOrderDetailPage() {
   const [order, setOrder] = useState(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
-  const [showPaymentModal, setShowPaymentModal] = useState(false);
 
   useEffect(() => {
     fetchOrderDetail();
@@ -52,15 +51,6 @@ export default function CustomerOrderDetailPage() {
     }
   };
 
-  const handleUploadPayment = async (paymentSlipUrl) => {
-    try {
-      await ordersService.uploadPayment(order.id, paymentSlipUrl);
-      await fetchOrderDetail(); // Refresh order data
-      setShowPaymentModal(false);
-    } catch (err) {
-      throw err;
-    }
-  };
 
   const getStatusIcon = (status) => {
     switch (status) {
@@ -98,10 +88,10 @@ export default function CustomerOrderDetailPage() {
 
   if (loading) {
     return (
-      <div className="min-h-screen bg-gray-50 flex items-center justify-center">
+      <div className="min-h-screen bg-linear-to-b from-slate-50/40 via-white to-slate-50/30 flex items-center justify-center">
         <div className="text-center">
-          <div className="w-16 h-16 border-4 border-gray-200 border-t-black rounded-full animate-spin mx-auto mb-4"></div>
-          <p className="text-gray-600">Loading order details...</p>
+          <Loader2 className="w-8 h-8 text-slate-400 animate-spin mx-auto mb-4" />
+          <div className="text-slate-600 font-light">กำลังโหลดรายละเอียดออเดอร์...</div>
         </div>
       </div>
     );
@@ -156,183 +146,8 @@ export default function CustomerOrderDetailPage() {
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
           {/* Left Column - Order Details */}
           <div className="lg:col-span-2 space-y-6">
-            {/* Order Items */}
-            <div className="bg-white rounded-2xl p-6 shadow-sm">
-              <h2 className="text-lg font-semibold mb-4 text-gray-900 flex items-center gap-2">
-                <Package className="w-5 h-5" />
-                Order Items
-              </h2>
-              
-              <div className="space-y-4">
-                {order.items && order.items.length > 0 ? (
-                  order.items.map((item, index) => (
-                    <div key={index} className="flex items-center gap-4 pb-4 border-b border-gray-100 last:border-0">
-                      <div className="w-20 h-20 bg-gray-100 rounded-xl overflow-hidden shrink-0">
-                        <img
-                          src={item.product?.imageUrl || '/placeholder.jpg'}
-                          alt={item.product?.name || 'Product'}
-                          className="w-full h-full object-cover"
-                        />
-                      </div>
-                      <div className="flex-1 min-w-0">
-                        <h3 className="font-medium text-gray-900 truncate">{item.product?.name || 'Product'}</h3>
-                        <p className="text-sm text-gray-500 mt-1">
-                          {formatPrice(item.price)} × {item.quantity}
-                        </p>
-                      </div>
-                      <div className="text-right shrink-0">
-                        <p className="font-semibold text-gray-900">
-                          {formatPrice(item.quantity * item.price)}
-                        </p>
-                      </div>
-                    </div>
-                  ))
-                ) : (
-                  <p className="text-gray-500 text-center py-4">No items found</p>
-                )}
-              </div>
-
-              {/* Order Summary */}
-              <div className="mt-6 pt-4 border-t border-gray-200 space-y-3">
-                <div className="flex justify-between text-sm">
-                  <span className="text-gray-600">Subtotal</span>
-                  <span className="text-gray-900 font-medium">{formatPrice(order.totalAmount)}</span>
-                </div>
-                <div className="flex justify-between text-base font-semibold">
-                  <span className="text-gray-900">Total</span>
-                  <span className="text-gray-900">{formatPrice(order.totalAmount)}</span>
-                </div>
-              </div>
-            </div>
-
-            {/* Shipping Address */}
-            <div className="bg-white rounded-2xl p-6 shadow-sm">
-              <h2 className="text-lg font-semibold mb-4 text-gray-900 flex items-center gap-2">
-                <MapPin className="w-5 h-5" />
-                Shipping Address
-              </h2>
-              
-              <div className="space-y-2 text-sm text-gray-700">
-                {order.address ? (
-                  <>
-                    <p>{order.address}</p>
-                    {order.province && (
-                      <p>
-                        {order.district && `${order.district}, `}
-                        {order.province}
-                        {order.postalCode && ` ${order.postalCode}`}
-                      </p>
-                    )}
-                  </>
-                ) : (
-                  <p className="text-gray-500">No shipping address provided</p>
-                )}
-              </div>
-
-              {order.phone && (
-                <div className="mt-4 pt-4 border-t border-gray-200 flex items-center gap-2 text-sm">
-                  <Phone className="w-4 h-4 text-gray-500" />
-                  <span className="text-gray-700">{order.phone}</span>
-                </div>
-              )}
-
-              {order.note && (
-                <div className="mt-4 pt-4 border-t border-gray-200">
-                  <div className="flex items-center gap-2 mb-2">
-                    <FileText className="w-4 h-4 text-gray-500" />
-                    <span className="text-sm font-medium text-gray-700">Notes</span>
-                  </div>
-                  <p className="text-sm text-gray-600">{order.note}</p>
-                </div>
-              )}
-            </div>
-
-            {/* Delivery Address / Sales Location Info */}
-            {/* Delivery Address = สถานที่จัดส่งสินค้า (ใช้เมื่อ Online Order) */}
-            {order.deliveryAddress ? (
-              <div className="bg-blue-50 border border-blue-200 rounded-2xl p-6 shadow-sm">
-                <h2 className="text-lg font-semibold mb-4 text-blue-900 flex items-center gap-2">
-                  <MapPin className="w-5 h-5" />
-                  ที่อยู่จัดส่ง
-                </h2>
-                <div className="space-y-2 text-sm text-blue-900">
-                  <p className="font-medium">{order.deliveryAddress.name}</p>
-                  <p className="text-blue-700">Code: {order.deliveryAddress.code}</p>
-                  {order.deliveryAddress.address && (
-                    <p className="text-blue-700">{order.deliveryAddress.address}</p>
-                  )}
-                  {order.deliveryAddress.province && (
-                    <p className="text-blue-700">
-                      {order.deliveryAddress.district && `${order.deliveryAddress.district}, `}
-                      {order.deliveryAddress.province}
-                      {order.deliveryAddress.postalCode && ` ${order.deliveryAddress.postalCode}`}
-                    </p>
-                  )}
-                  {order.deliveryAddress.phone && (
-                    <p className="text-blue-700">Tel: {order.deliveryAddress.phone}</p>
-                  )}
-                </div>
-              </div>
-            ) : order.deliveryAddressId ? (
-              <div className="bg-red-50 border border-red-200 rounded-2xl p-6 shadow-sm">
-                <h2 className="text-lg font-semibold mb-4 text-red-900 flex items-center gap-2">
-                  <MapPin className="w-5 h-5" />
-                  ไม่พบข้อมูลที่อยู่จัดส่ง
-                </h2>
-                <p className="text-sm text-red-700">ที่อยู่จัดส่งอาจถูกลบหรือไม่พร้อมใช้งาน</p>
-                <p className="text-xs text-red-600 mt-2">Delivery Address ID: {order.deliveryAddressId}</p>
-                <p className="text-xs text-red-600">กรุณาติดต่อผู้ดูแลระบบ</p>
-              </div>
-            ) : !order.salesLocation ? (
-              <div className="bg-yellow-50 border border-yellow-200 rounded-2xl p-6 shadow-sm">
-                <h2 className="text-lg font-semibold mb-4 text-yellow-900 flex items-center gap-2">
-                  <MapPin className="w-5 h-5" />
-                  สถานที่จัดส่ง
-                </h2>
-                <p className="text-sm text-yellow-700">ยังไม่ได้เลือกที่อยู่จัดส่ง</p>
-                <p className="text-xs text-yellow-600 mt-2">
-                  {order.province ? `จังหวัด: ${order.province}` : 'ไม่มีข้อมูลที่อยู่จัดส่ง'}
-                </p>
-                <p className="text-xs text-yellow-600">
-                  {order.salesLocationId ? 'มี SalesLocation แต่ไม่มี Delivery Address' : 'Order นี้เป็น Online Order แต่ยังไม่ได้เลือก Delivery Address'}
-                </p>
-                <p className="text-xs text-yellow-500 mt-2 italic">
-                  * Order นี้อาจถูกสร้างก่อนระบบ Delivery Address ทำงาน กรุณาติดต่อผู้ดูแลระบบ
-                </p>
-              </div>
-            ) : null}
-
-            {/* SalesLocation = สถานที่ขายและเก็บสินค้า (ใช้เมื่อ In-Store Order หรือ Online Order ที่ลด stock) */}
-            {order.salesLocation && (
-              <div className="bg-green-50 border border-green-200 rounded-2xl p-6 shadow-sm">
-                <h2 className="text-lg font-semibold mb-4 text-green-900 flex items-center gap-2">
-                  <Store className="w-5 h-5" />
-                  {order.deliveryAddress ? 'สาขาที่มี Stock' : 'ซื้อที่สาขา'}
-                </h2>
-                <div className="space-y-2 text-sm text-green-900">
-                  <p className="font-medium">{order.salesLocation.name}</p>
-                  <p className="text-green-700">Code: {order.salesLocation.code}</p>
-                  {order.salesLocation.address && (
-                    <p className="text-green-700">{order.salesLocation.address}</p>
-                  )}
-                  {order.salesLocation.province && (
-                    <p className="text-green-700">
-                      {order.salesLocation.district && `${order.salesLocation.district}, `}
-                      {order.salesLocation.province}
-                      {order.salesLocation.postalCode && ` ${order.salesLocation.postalCode}`}
-                    </p>
-                  )}
-                  {order.salesLocation.phone && (
-                    <p className="text-green-700">Tel: {order.salesLocation.phone}</p>
-                  )}
-                  {order.deliveryAddress && (
-                    <p className="text-xs text-green-600 mt-2 italic">
-                      * Stock ลดจากสาขานี้ แต่ส่งจากที่อยู่จัดส่ง
-                    </p>
-                  )}
-                </div>
-              </div>
-            )}
+            <OrderItemsList order={order} />
+            <DeliveryInfoSection order={order} />
 
             {/* Payment Slip */}
             {order.paymentImage && (
@@ -351,65 +166,26 @@ export default function CustomerOrderDetailPage() {
 
           {/* Right Column - Order Status & Actions */}
           <div className="space-y-6">
-            {/* Order Status Card */}
-            <div className="bg-white rounded-2xl p-6 shadow-sm">
-              <h2 className="text-lg font-semibold mb-4 text-gray-900">Order Status</h2>
-              
-              <div className="space-y-4">
-                <div>
-                  <p className="text-sm text-gray-600 mb-1">Status</p>
-                  <div className={`inline-flex items-center gap-2 px-3 py-1.5 rounded-lg border ${getStatusColor(order.status)}`}>
-                    {getStatusIcon(order.status)}
-                    <span className="font-medium text-sm">{order.status}</span>
-                  </div>
-                </div>
+            <OrderStatusCard 
+              order={order} 
+              getStatusIcon={getStatusIcon}
+              getStatusColor={getStatusColor}
+              formatDate={formatDate}
+            />
 
-                <div>
-                  <p className="text-sm text-gray-600 mb-1">Order Date</p>
-                  <p className="text-sm font-medium text-gray-900">{formatDate(order.createdAt)}</p>
-                </div>
-
-                {order.paymentAt && (
-                  <div>
-                    <p className="text-sm text-gray-600 mb-1">Payment Date</p>
-                    <p className="text-sm font-medium text-gray-900">{formatDate(order.paymentAt)}</p>
-                  </div>
-                )}
-
-                {order.trackingNumber && (
-                  <div>
-                    <p className="text-sm text-gray-600 mb-1">Tracking Number</p>
-                    <p className="text-sm font-mono font-medium text-gray-900">{order.trackingNumber}</p>
-                  </div>
-                )}
-              </div>
-            </div>
-
-            {/* Actions */}
-            {order.status === 'Pending' && !order.paymentImage && (
-              <div className="bg-blue-50 border border-blue-200 rounded-2xl p-6">
-                <div className="mb-4">
-                  <h3 className="font-semibold text-blue-900 mb-1">Payment Required</h3>
-                  <p className="text-sm text-blue-700">Please upload your payment slip to process your order.</p>
-                </div>
-                <button
-                  onClick={() => setShowPaymentModal(true)}
-                  className="w-full bg-blue-600 text-white py-3 rounded-xl hover:bg-blue-700 transition-all font-medium flex items-center justify-center gap-2"
-                >
-                  <Upload className="w-4 h-4" />
-                  Upload Payment Slip
-                </button>
-              </div>
-            )}
+            <CustomerPaymentUpload 
+              order={order} 
+              onUploadSuccess={fetchOrderDetail}
+            />
 
             {order.status === 'Pending' && order.paymentImage && (
               <div className="bg-green-50 border border-green-200 rounded-2xl p-6">
                 <div className="flex items-center gap-2 text-green-700 mb-2">
                   <CheckCircle className="w-5 h-5" />
-                  <h3 className="font-semibold">Payment Uploaded</h3>
+                  <h3 className="font-semibold">อัปโหลดสลิปแล้ว</h3>
                 </div>
                 <p className="text-sm text-green-600">
-                  Your payment slip has been received and is being verified.
+                  สลิปการชำระเงินของคุณได้รับการอัปโหลดแล้ว และสถานะออเดอร์จะถูกอัปเดตเป็น PAID
                 </p>
               </div>
             )}
@@ -417,14 +193,6 @@ export default function CustomerOrderDetailPage() {
         </div>
       </div>
 
-      {/* Payment Upload Modal */}
-      {showPaymentModal && order && (
-        <PaymentUploadModal
-          order={order}
-          onClose={() => setShowPaymentModal(false)}
-          onUploadSuccess={handleUploadPayment}
-        />
-      )}
     </div>
   );
 }

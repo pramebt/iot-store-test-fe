@@ -76,19 +76,19 @@ const Footer = () => {
             <h4 className="text-sm font-medium mb-4 text-gray-900">Contact Us</h4>
             <ul className="space-y-3">
               <li className="flex items-start space-x-2">
-                <MapPin className="w-4 h-4 text-gray-400 mt-0.5 flex-shrink-0" />
+                <MapPin className="w-4 h-4 text-gray-400 mt-0.5 shrink-0" />
                 <span className="text-gray-500 text-sm">
                   123 Business St., Bangkok, Thailand
                 </span>
               </li>
               <li className="flex items-center space-x-2">
-                <Phone className="w-4 h-4 text-gray-400 flex-shrink-0" />
+                <Phone className="w-4 h-4 text-gray-400 shrink-0" />
                 <a href="tel:+66123456789" className="text-gray-500 hover:text-gray-900 text-sm">
                   +66 12 345 6789
                 </a>
               </li>
               <li className="flex items-center space-x-2">
-                <Mail className="w-4 h-4 text-gray-400 flex-shrink-0" />
+                <Mail className="w-4 h-4 text-gray-400 shrink-0" />
                 <a href="mailto:info@iotstore.com" className="text-gray-500 hover:text-gray-900 text-sm">
                   info@iotstore.com
                 </a>

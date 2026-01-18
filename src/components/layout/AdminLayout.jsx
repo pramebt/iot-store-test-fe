@@ -21,7 +21,7 @@ export default function AdminLayout() {
           >
             <Menu className="w-6 h-6" />
           </button>
-          <span className="ml-4 text-lg font-semibold text-gray-900">BD Store Admin</span>
+          <span className="ml-4 text-lg font-semibold text-gray-900">IoT Store Admin</span>
         </header>
 
         {/* Content Area */}

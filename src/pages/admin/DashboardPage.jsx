@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react'
 import { Link } from 'react-router-dom'
-import { DollarSign, Package, Users, Smartphone, Plus, FolderPlus, ClipboardList, BarChart3, TrendingUp, TrendingDown } from 'lucide-react'
+import { DollarSign, Package, Users, Smartphone, Plus, FolderPlus, ClipboardList, BarChart3, TrendingUp, TrendingDown, Loader2 } from 'lucide-react'
 import { analyticsService } from '../../services/analytics.service'
 import { ordersService } from '../../services/orders.service'
 import StatCard from '../../components/common/StatCard'
@@ -51,8 +51,11 @@ export default function DashboardPage() {
 
   if (loading) {
     return (
-      <div className="flex items-center justify-center h-64">
-        <div className="text-gray-500">Loading dashboard...</div>
+      <div className="min-h-screen bg-linear-to-b from-slate-50/40 via-white to-slate-50/30 flex items-center justify-center">
+        <div className="text-center">
+          <Loader2 className="w-8 h-8 text-slate-400 animate-spin mx-auto mb-4" />
+          <div className="text-slate-600 font-light">กำลังโหลดข้อมูลแดชบอร์ด...</div>
+        </div>
       </div>
     )
   }
@@ -61,8 +64,8 @@ export default function DashboardPage() {
     <div className="space-y-4 sm:space-y-6">
       {/* Header */}
       <div>
-        <h1 className="text-2xl sm:text-3xl font-semibold text-gray-900">Dashboard</h1>
-        <p className="text-xs sm:text-sm text-gray-600 mt-1">Welcome back! Here's your store overview.</p>
+        <h1 className="text-4xl md:text-5xl font-semibold text-gray-900 mb-2">Dashboard</h1>
+        <p className="text-base text-gray-600">Welcome back! Here's your store overview.</p>
       </div>
 
       {/* Stats Grid */}

@@ -3,7 +3,7 @@ import { analyticsService } from '../../services/analytics.service';
 import AnalyticsStats from '../../components/admin/analytics/AnalyticsStats';
 import LeafletMap from '../../components/admin/analytics/LeafletMap';
 import AnalyticsCharts from '../../components/admin/analytics/AnalyticsCharts';
-import { RefreshCw } from 'lucide-react';
+import { RefreshCw, XCircle } from 'lucide-react';
 
 export default function AnalyticsPage() {
   const [loading, setLoading] = useState(true);
@@ -62,10 +62,12 @@ export default function AnalyticsPage() {
 
   if (loading) {
     return (
-      <div className="max-w-7xl mx-auto px-6 py-20">
-        <div className="text-center">
-          <RefreshCw className="w-8 h-8 text-gray-400 animate-spin mx-auto mb-4" />
-          <p className="text-gray-600">Loading analytics...</p>
+      <div className="min-h-screen bg-linear-to-b from-slate-50/40 via-white to-slate-50/30">
+        <div className="max-w-7xl mx-auto px-6 py-32">
+          <div className="text-center">
+            <RefreshCw className="w-8 h-8 text-slate-400 animate-spin mx-auto mb-4" />
+            <div className="text-slate-600 font-light">กำลังโหลดข้อมูลวิเคราะห์...</div>
+          </div>
         </div>
       </div>
     );
@@ -73,16 +75,22 @@ export default function AnalyticsPage() {
 
   if (error) {
     return (
-      <div className="max-w-7xl mx-auto px-6 py-20">
-        <div className="text-center">
-          <div className="text-xl text-gray-900 mb-6">Error: {error}</div>
-          <button
-            onClick={loadAnalytics}
-            className="bg-gray-900 text-white px-6 py-2 rounded-full hover:bg-gray-800 transition-all inline-flex items-center gap-2"
-          >
-            <RefreshCw className="w-4 h-4" />
-            Retry
-          </button>
+      <div className="min-h-screen bg-linear-to-b from-slate-50/40 via-white to-slate-50/30">
+        <div className="max-w-7xl mx-auto px-6 py-32">
+          <div className="text-center">
+            <div className="w-16 h-16 bg-red-50 rounded-full flex items-center justify-center mx-auto mb-6">
+              <XCircle className="w-8 h-8 text-red-500" />
+            </div>
+            <div className="text-xl text-slate-800 mb-2 font-medium">เกิดข้อผิดพลาด</div>
+            <div className="text-slate-600 mb-8 font-light">{error}</div>
+            <button
+              onClick={loadAnalytics}
+              className="bg-slate-800 text-white px-6 py-2.5 rounded-full hover:bg-slate-700 transition-all duration-200 font-medium text-sm shadow-sm hover:shadow-md inline-flex items-center gap-2"
+            >
+              <RefreshCw className="w-4 h-4" />
+              ลองอีกครั้ง
+            </button>
+          </div>
         </div>
       </div>
     );

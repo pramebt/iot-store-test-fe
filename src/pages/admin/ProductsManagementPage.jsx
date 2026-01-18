@@ -8,6 +8,8 @@ import EditProductModal from '../../components/admin/products/EditProductModal'
 import DeleteProductModal from '../../components/admin/products/DeleteProductModal'
 import Pagination from '../../components/admin/products/Pagination'
 import LoadingSpinner from '../../components/common/LoadingSpinner'
+import PageHeader from '../../components/common/PageHeader'
+import toast from '../../utils/toast'
 
 export default function ProductsManagementPage() {
   const [products, setProducts] = useState([])
@@ -58,6 +60,7 @@ export default function ProductsManagementPage() {
       setTotalPages(data.totalPages || 1)
     } catch (error) {
       console.error('Failed to load products:', error)
+      toast.error(error.response?.data?.message || error.message || 'ไม่สามารถโหลดข้อมูลสินค้าได้')
     } finally {
       setLoading(false)
     }
@@ -78,12 +81,15 @@ export default function ProductsManagementPage() {
     
     try {
       await productsService.delete(selectedProduct.id)
+      toast.success('ลบสินค้าสำเร็จ')
       setShowDeleteModal(false)
       setSelectedProduct(null)
       loadProducts()
     } catch (error) {
       console.error('Failed to delete product:', error)
-      alert('Failed to delete product')
+      toast.error(error.response?.data?.message || error.message || 'ไม่สามารถลบสินค้าได้')
+      setShowDeleteModal(false)
+      setSelectedProduct(null)
     }
   }
 
@@ -91,28 +97,28 @@ export default function ProductsManagementPage() {
     try {
       const newStatus = product.status === 'Active' ? 'Inactive' : 'Active'
       await productsService.update(product.id, { status: newStatus })
+      toast.success(`เปลี่ยนสถานะเป็น ${newStatus === 'Active' ? 'ใช้งาน' : 'ไม่ใช้งาน'} สำเร็จ`)
       loadProducts()
     } catch (error) {
       console.error('Failed to update status:', error)
-      alert('Failed to update status')
+      toast.error(error.response?.data?.message || error.message || 'ไม่สามารถอัปเดตสถานะได้')
     }
   }
 
   return (
     <div className="space-y-4 sm:space-y-6">
-      {/* Header */}
-      <div className="flex flex-col sm:flex-row justify-between items-start gap-3">
-        <div>
-          <h1 className="text-2xl sm:text-3xl font-semibold text-gray-900">Products</h1>
-          <p className="text-xs sm:text-sm text-gray-600 mt-1">Manage your product inventory</p>
-        </div>
-        <button
-          onClick={() => setShowAddModal(true)}
-          className="bg-gray-900 text-white text-xs sm:text-sm px-3 sm:px-4 py-1.5 rounded-full hover:bg-gray-800 transition-all whitespace-nowrap"
-        >
-          + Add Product
-        </button>
-      </div>
+      <PageHeader 
+        title="Products"
+        subtitle="Manage your product inventory"
+        actions={
+          <button
+            onClick={() => setShowAddModal(true)}
+            className="bg-gray-900 text-white text-sm px-6 py-2.5 rounded-full hover:bg-gray-800 transition-all font-medium"
+          >
+            + Add Product
+          </button>
+        }
+      />
 
       {/* Filters */}
       <ProductsFilters

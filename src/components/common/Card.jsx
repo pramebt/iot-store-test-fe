@@ -9,15 +9,15 @@ const Card = ({
   return (
     <div
       className={`
-        bg-white rounded-lg shadow-md
+        bg-white rounded-2xl shadow-sm border border-gray-200
         ${padding ? 'p-6' : ''}
-        ${hover ? 'hover:shadow-lg transition-shadow duration-200' : ''}
+        ${hover ? 'hover:shadow-md transition-all duration-200' : ''}
         ${className}
       `}
       {...props}
     >
       {title && (
-        <h3 className="text-xl font-semibold text-gray-800 mb-4">
+        <h3 className="text-xl font-semibold text-gray-900 mb-4">
           {title}
         </h3>
       )}

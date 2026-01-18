@@ -1,7 +1,8 @@
 import { useEffect, useState } from 'react'
-import { Users, CheckCircle, PlusCircle, ShoppingCart, Info } from 'lucide-react'
+import { Users, CheckCircle, PlusCircle, ShoppingCart, Info, Loader2 } from 'lucide-react'
 import { customersService } from '../../services/customers.service'
 import StatCard from '../../components/common/StatCard'
+import PageHeader from '../../components/common/PageHeader'
 
 export default function CustomersManagementPage() {
   const [customers, setCustomers] = useState([])
@@ -34,12 +35,13 @@ export default function CustomersManagementPage() {
       const data = await customersService.getAll(filters)
       setCustomers(data.customers || [])
       setPagination({
-        total: data.total,
-        totalPages: data.totalPages
+        total: data.total || 0,
+        totalPages: data.totalPages || 1
       })
     } catch (error) {
       console.error('Failed to load customers:', error)
       setCustomers([])
+      // Error is handled by loading state UI
     } finally {
       setLoading(false)
     }
@@ -56,11 +58,10 @@ export default function CustomersManagementPage() {
 
   return (
     <div className="space-y-4 sm:space-y-6">
-      {/* Header */}
-      <div>
-        <h1 className="text-2xl sm:text-3xl font-semibold text-gray-900">Customers</h1>
-        <p className="text-xs sm:text-sm text-gray-600 mt-1">View and manage customer information</p>
-      </div>
+      <PageHeader 
+        title="Customers"
+        subtitle="View and manage customer information"
+      />
 
       {/* Stats */}
       <div className="grid grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-4 lg:gap-6">
@@ -100,9 +101,12 @@ export default function CustomersManagementPage() {
       </div>
 
       {/* Customers Table */}
-      <div className="bg-white rounded-lg shadow overflow-hidden">
+      <div className="bg-white/90 backdrop-blur-sm rounded-3xl border border-slate-200/60 shadow-sm overflow-hidden">
         {loading ? (
-          <div className="p-8 text-center text-gray-500">Loading customers...</div>
+          <div className="p-12 text-center">
+            <Loader2 className="w-8 h-8 text-slate-400 animate-spin mx-auto mb-4" />
+            <div className="text-slate-600 font-light">กำลังโหลดข้อมูลลูกค้า...</div>
+          </div>
         ) : (
           <div className="overflow-x-auto">
             <table className="w-full">

@@ -4,6 +4,7 @@ import { useAuthStore } from '../../store/authStore';
 import Card from '../../components/common/Card';
 import Input from '../../components/common/Input';
 import Button from '../../components/common/Button';
+import toast from '../../utils/toast';
 
 export default function LoginPage() {
   const navigate = useNavigate();
@@ -12,20 +13,19 @@ export default function LoginPage() {
     email: '',
     password: '',
   });
-  const [error, setError] = useState('');
   const [loading, setLoading] = useState(false);
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-    setError('');
     setLoading(true);
 
     try {
       await login(formData.email, formData.password);
-      navigate('/');
+      toast.success('Login successful!');
+      // Navigate to loading page first, then it will redirect to home
+      navigate('/login-loading');
     } catch (err) {
-      setError(err.message || 'Login failed');
-    } finally {
+      toast.error(err.message || 'Login failed');
       setLoading(false);
     }
   };
@@ -47,12 +47,6 @@ export default function LoginPage() {
           <h1 className="text-4xl font-semibold mb-2 text-gray-900">Welcome back</h1>
           <p className="text-gray-500">Sign in to your account</p>
         </div>
-        
-        {error && (
-          <div className="bg-red-50 border border-red-200 text-red-700 px-4 py-3 rounded-xl mb-6 text-sm">
-            {error}
-          </div>
-        )}
 
         <form onSubmit={handleSubmit} className="space-y-5">
           <div>

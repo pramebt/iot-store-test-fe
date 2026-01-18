@@ -162,9 +162,7 @@ export default function EditProductModal({ isOpen, onClose, onSuccess, productId
       newErrors.price = 'Selling price must be greater than 0'
     }
 
-    if (formData.basePrice && formData.price && parseFloat(formData.price) < parseFloat(formData.basePrice)) {
-      newErrors.price = 'Selling price must be greater than or equal to base price'
-    }
+    // Sale price (price) can be lower than basePrice for discounts/promotions
 
     if (!formData.stock || parseInt(formData.stock) < 0) {
       newErrors.stock = 'Stock must be 0 or greater'
@@ -233,26 +231,29 @@ export default function EditProductModal({ isOpen, onClose, onSuccess, productId
 
   return (
     <div className="fixed inset-0 z-50 overflow-y-auto">
-      {/* Backdrop - see-through */}
+      {/* Backdrop */}
       <div 
-        className="fixed inset-0 bg-black/20 backdrop-blur-sm"
+        className="fixed inset-0 bg-black/40 backdrop-blur-sm transition-opacity duration-300"
         onClick={onClose}
       />
 
       {/* Modal */}
       <div className="relative min-h-screen flex items-center justify-center p-4">
-        <div className="relative bg-white rounded-2xl shadow-2xl w-full max-w-2xl max-h-[90vh] overflow-hidden">
+        <div 
+          className="relative bg-white/95 backdrop-blur-xl rounded-3xl shadow-2xl w-full max-w-2xl max-h-[90vh] overflow-hidden border border-slate-200/60"
+          onClick={(e) => e.stopPropagation()}
+        >
           {/* Header */}
-          <div className="sticky top-0 bg-white border-b border-gray-200 px-6 py-4 flex items-center justify-between">
+          <div className="sticky top-0 bg-linear-to-b from-white to-slate-50/30 border-b border-slate-200/60 px-8 py-6 flex items-center justify-between z-10">
             <div>
-              <h2 className="text-xl font-semibold text-gray-900">Edit Product</h2>
-              <p className="text-sm text-gray-600 mt-0.5">Update product information</p>
+              <h2 className="text-xl font-semibold text-slate-800 tracking-tight">Edit Product</h2>
+              <p className="text-sm text-slate-600 mt-1 font-light">Update product information</p>
             </div>
             <button
               onClick={onClose}
-              className="text-gray-400 hover:text-gray-600 transition-colors"
+              className="text-slate-400 hover:text-slate-600 transition-colors duration-200 p-2 rounded-full hover:bg-slate-100/50"
             >
-              <X className="w-6 h-6" />
+              <X className="w-5 h-5" />
             </button>
           </div>
 
@@ -505,11 +506,11 @@ export default function EditProductModal({ isOpen, onClose, onSuccess, productId
               </div>
 
               {/* Footer */}
-              <div className="sticky bottom-0 bg-white border-t border-gray-200 px-6 py-4 flex gap-3 justify-end">
+              <div className="sticky bottom-0 bg-linear-to-b from-slate-50/30 to-white border-t border-slate-200/60 px-8 py-6 flex gap-3 justify-end z-10">
                 <button
                   type="button"
                   onClick={onClose}
-                  className="px-4 py-2 text-sm border border-gray-300 rounded-lg hover:bg-gray-50 transition-colors"
+                  className="px-6 py-2.5 text-sm border border-slate-300/60 rounded-full hover:bg-slate-50 transition-all duration-200 font-medium shadow-sm hover:shadow-md"
                   disabled={loading}
                 >
                   Cancel
@@ -517,7 +518,7 @@ export default function EditProductModal({ isOpen, onClose, onSuccess, productId
                 <button
                   type="submit"
                   disabled={loading}
-                  className="bg-gray-900 text-white text-sm px-4 py-2 rounded-lg hover:bg-gray-800 transition-colors disabled:opacity-50 disabled:cursor-not-allowed inline-flex items-center gap-2"
+                  className="px-6 py-2.5 text-sm bg-slate-800 text-white rounded-full hover:bg-slate-700 transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed inline-flex items-center gap-2 font-medium shadow-sm hover:shadow-md"
                 >
                   {loading ? (
                     <>

@@ -6,6 +6,8 @@ import OrderStatusModal from '../../components/admin/orders/OrderStatusModal'
 import OrderStatsCards from '../../components/admin/orders/OrderStatsCards'
 import Pagination from '../../components/admin/products/Pagination'
 import LoadingSpinner from '../../components/common/LoadingSpinner'
+import PageHeader from '../../components/common/PageHeader'
+import toast from '../../utils/toast'
 
 export default function OrdersManagementPage() {
   const [orders, setOrders] = useState([])
@@ -39,6 +41,7 @@ export default function OrdersManagementPage() {
       setTotalPages(data.totalPages || 1)
     } catch (error) {
       console.error('Failed to load orders:', error)
+      toast.error(error.response?.data?.message || error.message || 'ไม่สามารถโหลดข้อมูลออเดอร์ได้')
     } finally {
       setLoading(false)
     }
@@ -49,13 +52,17 @@ export default function OrdersManagementPage() {
 
     try {
       await ordersService.updateStatus(selectedOrder.id, newStatus)
+      toast.success('อัปเดตสถานะออเดอร์สำเร็จ')
       setShowStatusModal(false)
       setSelectedOrder(null)
       setNewStatus('')
       loadOrders()
     } catch (error) {
       console.error('Failed to update status:', error)
-      alert('Failed to update order status')
+      toast.error(error.response?.data?.message || error.message || 'ไม่สามารถอัปเดตสถานะออเดอร์ได้')
+      setShowStatusModal(false)
+      setSelectedOrder(null)
+      setNewStatus('')
     }
   }
 
@@ -79,11 +86,10 @@ export default function OrdersManagementPage() {
 
   return (
     <div className="space-y-4 sm:space-y-6">
-      {/* Header */}
-      <div>
-        <h1 className="text-2xl sm:text-3xl font-semibold text-gray-900">Orders</h1>
-        <p className="text-xs sm:text-sm text-gray-600 mt-1">Manage and track all customer orders</p>
-      </div>
+      <PageHeader 
+        title="Orders"
+        subtitle="Manage and track all customer orders"
+      />
 
       {/* Stats */}
       <OrderStatsCards orders={orders} />

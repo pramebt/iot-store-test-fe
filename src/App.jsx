@@ -12,6 +12,7 @@ import ProfilePage from './pages/customer/ProfilePage';
 import About from './pages/About';
 import Contact from './pages/Contact';
 import LoginPage from './pages/auth/LoginPage';
+import LoginLoadingPage from './pages/auth/LoginLoadingPage';
 import RegisterPage from './pages/auth/RegisterPage';
 import AnalyticsPage from './pages/admin/AnalyticsPage';
 import DashboardPage from './pages/admin/DashboardPage';
@@ -24,10 +25,12 @@ import SalesLocationsManagementPage from './pages/admin/SalesLocationsManagement
 import DeliveryAddressesManagementPage from './pages/admin/DeliveryAddressesManagementPage';
 import TestAPI from './pages/TestAPI';
 import NotFound from './pages/NotFound';
+import { ToastContainer } from './components/common/Toast';
 
 function App() {
   return (
     <BrowserRouter>
+      <ToastContainer />
       <Routes>
         {/* Customer Routes with Layout */}
         <Route element={<Layout />}>
@@ -60,6 +63,7 @@ function App() {
 
         {/* Routes without Layout */}
         <Route path="/login" element={<LoginPage />} />
+        <Route path="/login-loading" element={<LoginLoadingPage />} />
         <Route path="/register" element={<RegisterPage />} />
         
         {/* 404 */}

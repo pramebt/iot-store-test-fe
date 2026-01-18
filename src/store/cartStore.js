@@ -96,6 +96,8 @@ const useCartStore = create(
     }),
     {
       name: 'cart-storage',
+      // Store only items array to localStorage
+      partialize: (state) => ({ items: state.items }),
     }
   )
 );

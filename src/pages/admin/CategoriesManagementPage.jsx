@@ -3,13 +3,20 @@ import { categoriesService } from '../../services/categories.service'
 import CategoriesGrid from '../../components/admin/categories/CategoriesGrid'
 import CategoryModal from '../../components/admin/categories/CategoryModal'
 import AddCategoryModal from '../../components/admin/categories/AddCategoryModal'
+import DeleteCategoryModal from '../../components/admin/categories/DeleteCategoryModal'
 import LoadingSpinner from '../../components/common/LoadingSpinner'
+import PageHeader from '../../components/common/PageHeader'
+import toast from '../../utils/toast'
 
 export default function CategoriesManagementPage() {
   const [categories, setCategories] = useState([])
   const [loading, setLoading] = useState(true)
+  const [error, setError] = useState(null)
+  const [successMessage, setSuccessMessage] = useState('')
   const [showModal, setShowModal] = useState(false)
   const [showAddModal, setShowAddModal] = useState(false)
+  const [showDeleteModal, setShowDeleteModal] = useState(false)
+  const [deletingCategory, setDeletingCategory] = useState(null)
   const [editingCategory, setEditingCategory] = useState(null)
   const [formData, setFormData] = useState({
     name: '',
@@ -24,9 +31,10 @@ export default function CategoriesManagementPage() {
     try {
       setLoading(true)
       const data = await categoriesService.getAll()
-      setCategories(data)
+      setCategories(Array.isArray(data) ? data : [])
     } catch (error) {
       console.error('Failed to load categories:', error)
+      toast.error(error.response?.data?.message || error.message || 'ไม่สามารถโหลดข้อมูลหมวดหมู่ได้')
     } finally {
       setLoading(false)
     }
@@ -37,8 +45,10 @@ export default function CategoriesManagementPage() {
     try {
       if (editingCategory) {
         await categoriesService.update(editingCategory.id, formData)
+        toast.success('อัปเดตหมวดหมู่สำเร็จ')
       } else {
         await categoriesService.create(formData)
+        toast.success('สร้างหมวดหมู่สำเร็จ')
       }
       setShowModal(false)
       setEditingCategory(null)
@@ -46,7 +56,7 @@ export default function CategoriesManagementPage() {
       loadCategories()
     } catch (error) {
       console.error('Failed to save category:', error)
-      alert('Failed to save category')
+      toast.error(error.response?.data?.message || error.message || 'ไม่สามารถบันทึกหมวดหมู่ได้')
     }
   }
 
@@ -59,15 +69,25 @@ export default function CategoriesManagementPage() {
     setShowModal(true)
   }
 
-  const handleDelete = async (id) => {
-    if (!confirm('Are you sure you want to delete this category?')) return
+  const handleDelete = (category) => {
+    setDeletingCategory(category)
+    setShowDeleteModal(true)
+  }
+
+  const confirmDelete = async () => {
+    if (!deletingCategory) return
     
     try {
-      await categoriesService.delete(id)
+      await categoriesService.delete(deletingCategory.id)
+      toast.success('ลบหมวดหมู่สำเร็จ')
+      setShowDeleteModal(false)
+      setDeletingCategory(null)
       loadCategories()
     } catch (error) {
       console.error('Failed to delete category:', error)
-      alert('Failed to delete category. It may have associated products.')
+      toast.error(error.response?.data?.message || error.message || 'ไม่สามารถลบหมวดหมู่ได้ อาจมีสินค้าที่ใช้หมวดหมู่นี้อยู่')
+      setShowDeleteModal(false)
+      setDeletingCategory(null)
     }
   }
 
@@ -75,10 +95,11 @@ export default function CategoriesManagementPage() {
     try {
       const newStatus = category.status === 'Active' ? 'Inactive' : 'Active'
       await categoriesService.update(category.id, { status: newStatus })
+      toast.success(`เปลี่ยนสถานะเป็น ${newStatus === 'Active' ? 'ใช้งาน' : 'ไม่ใช้งาน'} สำเร็จ`)
       loadCategories()
     } catch (error) {
       console.error('Failed to update status:', error)
-      alert('Failed to update status')
+      toast.error(error.response?.data?.message || error.message || 'ไม่สามารถอัปเดตสถานะได้')
     }
   }
 
@@ -88,23 +109,27 @@ export default function CategoriesManagementPage() {
 
   return (
     <div className="space-y-4 sm:space-y-6">
-      {/* Header */}
-      <div className="flex flex-col sm:flex-row justify-between items-start gap-3">
-        <div>
-          <h1 className="text-2xl sm:text-3xl font-semibold text-gray-900">Categories</h1>
-          <p className="text-xs sm:text-sm text-gray-600 mt-1">Organize your products into categories</p>
-        </div>
-        <button
-          onClick={openNewModal}
-          className="bg-gray-900 text-white text-xs sm:text-sm px-3 sm:px-4 py-1.5 rounded-full hover:bg-gray-800 transition-all whitespace-nowrap"
-        >
-          + Add Category
-        </button>
-      </div>
+      <PageHeader 
+        title="Categories"
+        subtitle="Organize your products into categories"
+        actions={
+          <button
+            onClick={openNewModal}
+            className="bg-gray-900 text-white text-sm px-6 py-2.5 rounded-full hover:bg-gray-800 transition-all font-medium"
+          >
+            + Add Category
+          </button>
+        }
+      />
 
       {/* Categories Grid */}
       {loading ? (
         <LoadingSpinner message="Loading categories..." />
+      ) : categories.length === 0 ? (
+        <div className="text-center py-12">
+          <div className="text-xl text-slate-800 mb-2 font-medium">ไม่มีหมวดหมู่</div>
+          <div className="text-slate-600 mb-8 font-light">เริ่มต้นด้วยการสร้างหมวดหมู่ใหม่</div>
+        </div>
       ) : (
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3 sm:gap-4 lg:gap-6">
           <CategoriesGrid
@@ -135,6 +160,17 @@ export default function CategoriesManagementPage() {
           setEditingCategory(null)
           setFormData({ name: '', description: '' })
         }}
+      />
+
+      {/* Delete Category Modal */}
+      <DeleteCategoryModal
+        isOpen={showDeleteModal}
+        category={deletingCategory}
+        onClose={() => {
+          setShowDeleteModal(false)
+          setDeletingCategory(null)
+        }}
+        onConfirm={confirmDelete}
       />
     </div>
   )

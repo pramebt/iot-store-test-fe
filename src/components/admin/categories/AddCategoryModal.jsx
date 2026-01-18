@@ -1,6 +1,7 @@
 import { useState, useEffect } from 'react'
 import { X, Loader2 } from 'lucide-react'
 import { categoriesService } from '../../../services/categories.service'
+import toast from '../../../utils/toast'
 
 export default function AddCategoryModal({ isOpen, onClose, onSuccess }) {
   const [loading, setLoading] = useState(false)
@@ -42,9 +43,7 @@ export default function AddCategoryModal({ isOpen, onClose, onSuccess }) {
       newErrors.name = 'Category name must be at least 2 characters'
     }
 
-    if (!formData.description.trim()) {
-      newErrors.description = 'Description is required'
-    }
+    // Description is optional, so no validation needed
 
     setErrors(newErrors)
     return Object.keys(newErrors).length === 0
@@ -59,12 +58,20 @@ export default function AddCategoryModal({ isOpen, onClose, onSuccess }) {
 
     try {
       setLoading(true)
-      await categoriesService.create(formData)
+      // Prepare data: send null for empty description, include status
+      const categoryData = {
+        name: formData.name.trim(),
+        description: formData.description.trim() || null,
+        status: formData.status
+      }
+      await categoriesService.create(categoryData)
+      toast.success('Category created successfully')
       onSuccess()
       onClose()
     } catch (error) {
       console.error('Failed to create category:', error)
-      setErrors({ submit: error.response?.data?.message || 'Failed to create category' })
+      const errorMessage = error.response?.data?.error || error.response?.data?.message || 'Failed to create category'
+      toast.error(errorMessage)
     } finally {
       setLoading(false)
     }
@@ -125,7 +132,7 @@ export default function AddCategoryModal({ isOpen, onClose, onSuccess }) {
                 {/* Description */}
                 <div>
                   <label htmlFor="description" className="block text-sm font-medium text-gray-900 mb-1.5">
-                    Description *
+                    Description <span className="text-gray-500 text-xs">(Optional)</span>
                   </label>
                   <textarea
                     id="description"
@@ -136,7 +143,7 @@ export default function AddCategoryModal({ isOpen, onClose, onSuccess }) {
                     className={`w-full px-3 py-2 text-sm border rounded-lg focus:ring-2 focus:ring-gray-900 focus:border-gray-900 transition-all resize-none ${
                       errors.description ? 'border-red-500' : 'border-gray-200'
                     }`}
-                    placeholder="Enter category description"
+                    placeholder="Enter category description (optional)"
                   />
                   {errors.description && (
                     <p className="mt-1 text-xs text-red-600">{errors.description}</p>
@@ -160,13 +167,6 @@ export default function AddCategoryModal({ isOpen, onClose, onSuccess }) {
                   </select>
                 </div>
               </div>
-
-              {/* Submit Error */}
-              {errors.submit && (
-                <div className="mt-4 bg-red-50 border border-red-200 rounded-lg p-3">
-                  <p className="text-sm text-red-600">{errors.submit}</p>
-                </div>
-              )}
             </div>
 
             {/* Footer */}

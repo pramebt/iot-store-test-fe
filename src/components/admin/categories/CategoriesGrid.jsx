@@ -52,7 +52,7 @@ export default function CategoriesGrid({
                 Edit
               </button>
               <button
-                onClick={() => onDelete(category.id)}
+                onClick={() => onDelete(category)}
                 className="flex-1 px-3 py-1.5 text-xs text-red-600 hover:bg-red-50 rounded-lg transition-all"
               >
                 Delete

@@ -1,9 +1,9 @@
 import { Link, useNavigate } from 'react-router-dom';
 import { useCartStore } from '../../store/cartStore';
-import Button from '../../components/common/Button';
-import Card from '../../components/common/Card';
 import { formatPrice } from '../../utils/formatPrice';
-import { Trash2, Plus, Minus, ShoppingBag, ArrowLeft } from 'lucide-react';
+import { Trash2, Plus, Minus, ShoppingBag } from 'lucide-react';
+import PageContainer from '../../components/common/PageContainer';
+import PageHeader from '../../components/common/PageHeader';
 
 export default function CartPage() {
   const navigate = useNavigate();
@@ -23,8 +23,8 @@ export default function CartPage() {
 
   if (items.length === 0) {
     return (
-      <div className="max-w-7xl mx-auto px-6 py-20">
-        <div className="max-w-md mx-auto text-center">
+      <PageContainer>
+        <div className="max-w-md mx-auto text-center py-20">
           <div className="w-20 h-20 bg-gray-100 rounded-full flex items-center justify-center mx-auto mb-6">
             <ShoppingBag className="w-10 h-10 text-gray-400" />
           </div>
@@ -33,12 +33,12 @@ export default function CartPage() {
             Start shopping to add items to your cart
           </p>
           <Link to="/products">
-            <button className="bg-gray-900 text-white px-8 py-3 rounded-full hover:bg-gray-800 transition-all">
+            <button className="bg-gray-900 text-white px-8 py-3 rounded-full hover:bg-gray-800 transition-all font-medium">
               Browse Products
             </button>
           </Link>
         </div>
-      </div>
+      </PageContainer>
     );
   }
 
@@ -47,17 +47,14 @@ export default function CartPage() {
   const finalTotal = total + shipping;
 
   return (
-    <div className="max-w-7xl mx-auto px-6 py-12">
-      {/* Back Button */}
-      <button
-        onClick={() => navigate('/products')}
-        className="flex items-center text-gray-600 hover:text-gray-900 mb-8 transition-colors"
-      >
-        <ArrowLeft className="w-5 h-5 mr-2" />
-        Continue Shopping
-      </button>
-
-      <h1 className="text-4xl md:text-5xl font-semibold mb-12 text-gray-900">Shopping Cart</h1>
+    <PageContainer>
+      <PageHeader 
+        title="Shopping Cart"
+        subtitle={`${items.length} item${items.length > 1 ? 's' : ''} in your cart`}
+        showBackButton={true}
+        backButtonText="Continue Shopping"
+        onBack={() => navigate('/products')}
+      />
 
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
         {/* Cart Items */}
@@ -190,6 +187,6 @@ export default function CartPage() {
           </div>
         </div>
       </div>
-    </div>
-  );
+    </PageContainer>
+    );
 }

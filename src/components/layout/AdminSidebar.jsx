@@ -84,10 +84,10 @@ export default function AdminSidebar({ isOpen, onClose }) {
         {/* Logo */}
         <div className="h-14 flex items-center justify-between px-6 border-b border-gray-200">
           <Link to="/admin" className="flex items-center space-x-2 group" onClick={onClose}>
-            <div className="w-7 h-7 bg-gradient-to-br from-gray-900 to-gray-700 rounded-lg flex items-center justify-center shadow-sm">
-              <span className="text-white font-semibold text-xs">BD</span>
+            <div className="w-7 h-7 bg-linear-to-br from-gray-900 to-gray-700 rounded-lg flex items-center justify-center shadow-sm">
+              <span className="text-white font-semibold text-xs">IoT</span>
             </div>
-            <span className="text-base font-medium text-gray-900 group-hover:text-gray-600 transition-colors">BD Store</span>
+            <span className="text-base font-medium text-gray-900 group-hover:text-gray-600 transition-colors">IoT Store</span>
           </Link>
           
           {/* Close button for mobile */}
@@ -130,12 +130,12 @@ export default function AdminSidebar({ isOpen, onClose }) {
       {/* User Section */}
       <div className="p-4 border-t border-gray-200">
         <div className="flex items-center space-x-3 px-3 py-2">
-          <div className="w-7 h-7 rounded-full bg-gradient-to-br from-gray-900 to-gray-700 flex items-center justify-center shadow-sm">
+          <div className="w-7 h-7 rounded-full bg-linear-to-br from-gray-900 to-gray-700 flex items-center justify-center shadow-sm">
             <span className="text-white text-xs font-medium">A</span>
           </div>
           <div className="flex-1 min-w-0">
             <p className="text-sm font-medium text-gray-900 truncate">Admin</p>
-            <p className="text-[10px] text-gray-500 truncate">admin@bdstore.com</p>
+            <p className="text-[10px] text-gray-500 truncate">admin@iotstore.com</p>
           </div>
         </div>
       </div>
