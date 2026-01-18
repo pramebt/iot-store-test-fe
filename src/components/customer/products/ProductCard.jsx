@@ -12,10 +12,13 @@ export default function ProductCard({ product }) {
   };
 
   // ตรวจสอบสต็อกจากทุกสถานที่ขาย (ใช้ availableStock ถ้ามี)
-  const availableStock = product.availableStock !== undefined 
+  // เพิ่มการตรวจสอบความปลอดภัยสำหรับกรณีที่ข้อมูลไม่ครบ
+  const availableStock = product?.availableStock !== undefined 
     ? product.availableStock 
-    : (product.stock || 0);
-  const availableLocations = product.availableLocations || [];
+    : (product?.stock || 0);
+  const availableLocations = Array.isArray(product?.availableLocations) 
+    ? product.availableLocations 
+    : [];
   // ถ้ามีสต็อกในสถานที่ขายใดๆ แสดงว่ายังไม่หมด (ตรวจสอบทั้ง availableStock และ availableLocations)
   const hasStockInAnyLocation = availableStock > 0 || availableLocations.length > 0;
   const isOutOfStock = !hasStockInAnyLocation;
@@ -119,14 +122,14 @@ export default function ProductCard({ product }) {
                 <span className="font-medium">สต็อก:</span> {availableStock} ชิ้น
               </div>
               {/* แสดงสถานที่ที่มีสต็อก - แสดงเมื่อมีหลายสถานที่ */}
-              {showAvailableLocations && (
+              {showAvailableLocations && availableLocations.length > 0 && (
                 <div className="text-xs text-gray-600 mt-1">
                   <span className="font-medium">มีที่:</span>{' '}
                   {availableLocations.slice(0, 2).map((loc, idx) => (
-                    <span key={loc.id}>
+                    <span key={loc?.id || idx}>
                       {idx > 0 && ', '}
-                      {loc.name}
-                      {loc.province && ` (${loc.province})`}
+                      {loc?.name || 'ไม่ระบุ'}
+                      {loc?.province && ` (${loc.province})`}
                     </span>
                   ))}
                   {availableLocations.length > 2 && (
