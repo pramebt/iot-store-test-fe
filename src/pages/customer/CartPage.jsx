@@ -1,13 +1,16 @@
 import { Link, useNavigate } from 'react-router-dom';
 import { useCartStore } from '../../store/cartStore';
+import { useAuthStore } from '../../store/authStore';
 import { formatPrice } from '../../utils/formatPrice';
-import { Trash2, Plus, Minus, ShoppingBag } from 'lucide-react';
+import { Trash2, Plus, Minus, ShoppingBag, Lock, LogIn, UserPlus } from 'lucide-react';
 import PageContainer from '../../components/common/PageContainer';
 import PageHeader from '../../components/common/PageHeader';
+import { motion } from 'framer-motion';
 
 export default function CartPage() {
   const navigate = useNavigate();
   const { items, updateQuantity, removeItem, clearCart, getTotal } = useCartStore();
+  const { user, isAuthenticated } = useAuthStore();
 
   const handleUpdateQuantity = (item, newQuantity) => {
     if (newQuantity <= 0) {
@@ -20,6 +23,86 @@ export default function CartPage() {
   const handleCheckout = () => {
     navigate('/checkout');
   };
+
+  // Check if user is authenticated
+  if (!isAuthenticated || !user) {
+    return (
+      <PageContainer>
+        <motion.div 
+          className="max-w-md mx-auto text-center py-20"
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.6, ease: "easeOut" }}
+        >
+          <motion.div 
+            className="w-20 h-20 bg-gray-100 rounded-full flex items-center justify-center mx-auto mb-6"
+            initial={{ scale: 0, rotate: -180 }}
+            animate={{ scale: 1, rotate: 0 }}
+            transition={{ duration: 0.6, delay: 0.2, ease: "easeOut" }}
+          >
+            <Lock className="w-10 h-10 text-gray-400" />
+          </motion.div>
+          <motion.h2 
+            className="text-3xl font-semibold mb-4 text-gray-900"
+            initial={{ opacity: 0, y: 10 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.6, delay: 0.3, ease: "easeOut" }}
+          >
+            Login Required
+          </motion.h2>
+          <motion.p 
+            className="text-gray-500 mb-8 text-lg"
+            initial={{ opacity: 0, y: 10 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.6, delay: 0.4, ease: "easeOut" }}
+          >
+            You need to login to view your shopping cart. 
+            <br />
+            Please sign in to continue shopping.
+          </motion.p>
+          <motion.div 
+            className="flex flex-col sm:flex-row gap-4 justify-center"
+            initial={{ opacity: 0, y: 10 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.6, delay: 0.5, ease: "easeOut" }}
+          >
+            <Link to="/login">
+              <motion.button 
+                className="w-full sm:w-auto bg-gray-900 text-white px-8 py-3 rounded-full hover:bg-gray-800 transition-all font-medium inline-flex items-center justify-center gap-2"
+                whileHover={{ scale: 1.05 }}
+                whileTap={{ scale: 0.95 }}
+              >
+                <LogIn className="w-5 h-5" />
+                Login
+              </motion.button>
+            </Link>
+            <Link to="/register">
+              <motion.button 
+                className="w-full sm:w-auto bg-white text-gray-900 px-8 py-3 rounded-full hover:bg-gray-50 transition-all font-medium border-2 border-gray-200 inline-flex items-center justify-center gap-2"
+                whileHover={{ scale: 1.05 }}
+                whileTap={{ scale: 0.95 }}
+              >
+                <UserPlus className="w-5 h-5" />
+                Register
+              </motion.button>
+            </Link>
+          </motion.div>
+          <motion.div 
+            className="mt-6"
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            transition={{ duration: 0.6, delay: 0.6, ease: "easeOut" }}
+          >
+            <Link to="/products">
+              <button className="text-gray-500 hover:text-gray-700 transition-colors text-sm">
+                Continue Shopping
+              </button>
+            </Link>
+          </motion.div>
+        </motion.div>
+      </PageContainer>
+    );
+  }
 
   if (items.length === 0) {
     return (

@@ -7,11 +7,13 @@ import PageContainer from '../../components/common/PageContainer';
 import PageHeader from '../../components/common/PageHeader';
 import Button from '../../components/common/Button';
 import { Loader2, XCircle, Package } from 'lucide-react';
+import { motion } from 'framer-motion';
 
 export default function ProductsPage() {
   const [products, setProducts] = useState([]);
   const [categories, setCategories] = useState([]);
   const [loading, setLoading] = useState(true);
+  const [categoriesLoading, setCategoriesLoading] = useState(true);
   const [error, setError] = useState(null);
   const [filters, setFilters] = useState({
     search: '',
@@ -39,11 +41,14 @@ export default function ProductsPage() {
 
   const loadCategories = async () => {
     try {
+      setCategoriesLoading(true);
       const data = await categoriesService.getAll();
       setCategories(Array.isArray(data) ? data : []);
     } catch (err) {
       console.error('Error loading categories:', err);
       setCategories([]);
+    } finally {
+      setCategoriesLoading(false);
     }
   };
 
@@ -100,16 +105,48 @@ export default function ProductsPage() {
   return (
     <PageContainer>
       <PageHeader 
-        title="Products"
-        subtitle="Browse our collection of products"
+        title="สินค้า"
+        subtitle="สำรวจสินค้าของเรา"
       />
 
-      <ProductFilters filters={filters} categories={categories} onFilterChange={handleFilterChange} />
+      <ProductFilters 
+        filters={filters} 
+        categories={categories} 
+        onFilterChange={handleFilterChange}
+        categoriesLoading={categoriesLoading}
+      />
 
       {loading ? (
-        <div className="text-center py-32">
-          <Loader2 className="w-8 h-8 text-slate-400 animate-spin mx-auto mb-4" />
-          <div className="text-slate-600 font-light">กำลังโหลดสินค้า...</div>
+        <div className="py-12">
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4 sm:gap-5 lg:gap-6">
+            {Array.from({ length: 8 }).map((_, index) => (
+              <motion.div
+                key={index}
+                className="bg-white rounded-2xl overflow-hidden border border-gray-100 shadow-sm"
+                initial={{ opacity: 0, y: 20 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ duration: 0.3, delay: index * 0.05 }}
+              >
+                {/* Image Skeleton */}
+                <div className="w-full h-48 bg-gray-200 animate-pulse" />
+                
+                {/* Content Skeleton */}
+                <div className="p-4 space-y-3">
+                  <div className="h-4 bg-gray-200 rounded animate-pulse" />
+                  <div className="h-4 bg-gray-200 rounded w-3/4 animate-pulse" />
+                  <div className="h-6 bg-gray-300 rounded w-1/2 animate-pulse" />
+                  <div className="flex gap-2 mt-4">
+                    <div className="h-9 bg-gray-200 rounded-full flex-1 animate-pulse" />
+                    <div className="h-9 w-9 bg-gray-200 rounded-full animate-pulse" />
+                  </div>
+                </div>
+              </motion.div>
+            ))}
+          </div>
+          <div className="text-center mt-8">
+            <Loader2 className="w-6 h-6 text-gray-400 animate-spin mx-auto mb-2" />
+            <div className="text-gray-500 text-sm font-light">กำลังโหลดสินค้า...</div>
+          </div>
         </div>
       ) : error ? (
         <div className="text-center py-32">
@@ -135,11 +172,23 @@ export default function ProductsPage() {
         </div>
       ) : (
         <>
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4 sm:gap-5 lg:gap-6 mb-12">
-            {products.map((product) => (
-              <ProductCard key={product.id} product={product} />
+          <motion.div 
+            className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4 sm:gap-5 lg:gap-6 mb-12"
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            transition={{ duration: 0.5 }}
+          >
+            {products.map((product, index) => (
+              <motion.div
+                key={product.id}
+                initial={{ opacity: 0, y: 20 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ duration: 0.4, delay: index * 0.05 }}
+              >
+                <ProductCard product={product} />
+              </motion.div>
             ))}
-          </div>
+          </motion.div>
 
           {/* Pagination */}
           {pagination.totalPages > 1 && (
@@ -149,7 +198,7 @@ export default function ProductsPage() {
                 onClick={() => handlePageChange(pagination.page - 1)}
                 className="px-4 py-2 text-sm rounded-full bg-gray-100 text-gray-900 hover:bg-gray-200 transition-all disabled:opacity-30 disabled:cursor-not-allowed"
               >
-                Previous
+                ก่อนหน้า
               </button>
               <div className="flex items-center gap-2">
                 {Array.from({ length: pagination.totalPages }, (_, i) => i + 1).map((page) => (
@@ -171,7 +220,7 @@ export default function ProductsPage() {
                 onClick={() => handlePageChange(pagination.page + 1)}
                 className="px-4 py-2 text-sm rounded-full bg-gray-100 text-gray-900 hover:bg-gray-200 transition-all disabled:opacity-30 disabled:cursor-not-allowed"
               >
-                Next
+                ถัดไป
               </button>
             </div>
           )}

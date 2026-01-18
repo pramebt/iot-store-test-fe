@@ -53,7 +53,7 @@ export function ProductInfoSection({ product }) {
       )}
 
       <div className="mb-8">
-        <h2 className="text-lg font-medium mb-3 text-gray-900">Description</h2>
+        <h2 className="text-lg font-medium mb-3 text-gray-900">รายละเอียด</h2>
         <p className="text-gray-600 leading-relaxed">{product.description}</p>
       </div>
 
@@ -61,14 +61,14 @@ export function ProductInfoSection({ product }) {
       <div className="mb-8 pb-8 border-b border-gray-200">
         <div className="flex items-center gap-2 mb-2">
           <Package className="w-5 h-5 text-gray-600" />
-          <span className="font-medium text-gray-900">Stock:</span>
+          <span className="font-medium text-gray-900">สต็อก:</span>
           <span className={product.stock > 0 ? 'text-green-600' : 'text-red-600'}>
-            {product.stock > 0 ? `${product.stock} available` : 'Out of stock'}
+            {product.stock > 0 ? `${product.stock} ชิ้น` : 'สินค้าหมด'}
           </span>
         </div>
         <div className="text-sm text-gray-500">
-          Status: <span className={`font-medium ${product.status === 'Active' ? 'text-green-600' : 'text-gray-600'}`}>
-            {product.status}
+          สถานะ: <span className={`font-medium ${product.status === 'Active' ? 'text-green-600' : 'text-gray-600'}`}>
+            {product.status === 'Active' ? 'มีสินค้า' : 'หมด'}
           </span>
         </div>
       </div>
@@ -92,7 +92,7 @@ export function ProductActions({
       {/* Quantity Selector */}
       {product.stock > 0 && (
         <div className="mb-6">
-          <label className="block font-medium mb-3 text-gray-900">Quantity:</label>
+          <label className="block font-medium mb-3 text-gray-900">จำนวน:</label>
           <div className="flex items-center gap-4">
             <button
               onClick={() => setQuantity(Math.max(1, quantity - 1))}
@@ -141,8 +141,8 @@ export function ProductActions({
       >
         <ShoppingCart className="w-5 h-5" />
         {product.stock === 0 
-          ? 'Out of Stock' 
-          : 'Add to Cart'}
+          ? 'สินค้าหมด' 
+          : 'เพิ่มลงตะกร้า'}
       </button>
 
       {/* Features */}
@@ -152,19 +152,19 @@ export function ProductActions({
             <div className="w-10 h-10 bg-white rounded-xl flex items-center justify-center">
               <Truck className="w-5 h-5 text-gray-700" />
             </div>
-            <span className="text-sm text-gray-700">Free shipping on orders over $100</span>
+            <span className="text-sm text-gray-700">จัดส่งฟรีเมื่อสั่งซื้อสินค้าครบ 3,000 บาท</span>
           </div>
           <div className="flex items-center gap-3">
             <div className="w-10 h-10 bg-white rounded-xl flex items-center justify-center">
               <Shield className="w-5 h-5 text-gray-700" />
             </div>
-            <span className="text-sm text-gray-700">1 year warranty included</span>
+            <span className="text-sm text-gray-700">รับประกัน 1 ปี</span>
           </div>
           <div className="flex items-center gap-3">
             <div className="w-10 h-10 bg-white rounded-xl flex items-center justify-center">
               <Package className="w-5 h-5 text-gray-700" />
             </div>
-            <span className="text-sm text-gray-700">30-day return policy</span>
+            <span className="text-sm text-gray-700">คืนสินค้าได้ภายใน 30 วัน</span>
           </div>
         </div>
       </div>

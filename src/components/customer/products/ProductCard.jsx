@@ -22,7 +22,7 @@ export default function ProductCard({ product }) {
       {/* Out of Stock Badge */}
       {isOutOfStock && (
         <div className="absolute top-3 right-3 z-10 bg-red-500 text-white text-xs font-semibold px-3 py-1.5 rounded-full shadow-lg">
-          Out of Stock
+          สินค้าหมด
         </div>
       )}
 
@@ -98,7 +98,7 @@ export default function ProductCard({ product }) {
           {/* Stock Info */}
           {!isOutOfStock && (
             <div className="text-xs text-gray-500">
-              <span className="font-medium">Stock:</span> {product.stock} available
+              <span className="font-medium">สต็อก:</span> {product.stock} ชิ้น
             </div>
           )}
         </div>
@@ -114,7 +114,7 @@ export default function ProductCard({ product }) {
           }`}
         >
           <ShoppingCart className="w-4 h-4" />
-          <span>{isOutOfStock ? 'Out of Stock' : 'View Details'}</span>
+          <span>{isOutOfStock ? 'สินค้าหมด' : 'ดูรายละเอียด'}</span>
         </button>
       </div>
     </div>

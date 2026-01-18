@@ -12,33 +12,33 @@ const Footer = () => {
           <div>
             <h3 className="text-base font-medium mb-4 text-gray-900">IoT Store</h3>
             <p className="text-gray-500 text-sm leading-relaxed">
-              Your trusted source for quality IoT products and electronics. 
-              We provide innovative solutions for your smart home and business needs.
+              แหล่งรวมอุปกรณ์ IoT และอิเล็กทรอนิกส์คุณภาพสูงที่คุณไว้วางใจ 
+              เรามีโซลูชันนวัตกรรมสำหรับบ้านอัจฉริยะและความต้องการทางธุรกิจของคุณ
             </p>
           </div>
 
           {/* Quick Links */}
           <div>
-            <h4 className="text-sm font-medium mb-4 text-gray-900">Quick Links</h4>
+            <h4 className="text-sm font-medium mb-4 text-gray-900">ลิงก์ด่วน</h4>
             <ul className="space-y-3">
               <li>
                 <Link to="/" className="text-gray-500 hover:text-gray-900 transition-colors text-sm">
-                  Home
+                  หน้าแรก
                 </Link>
               </li>
               <li>
                 <Link to="/products" className="text-gray-500 hover:text-gray-900 transition-colors text-sm">
-                  Products
+                  สินค้า
                 </Link>
               </li>
               <li>
                 <Link to="/about" className="text-gray-500 hover:text-gray-900 transition-colors text-sm">
-                  About Us
+                  เกี่ยวกับเรา
                 </Link>
               </li>
               <li>
                 <Link to="/contact" className="text-gray-500 hover:text-gray-900 transition-colors text-sm">
-                  Contact
+                  ติดต่อเรา
                 </Link>
               </li>
             </ul>
@@ -46,26 +46,26 @@ const Footer = () => {
 
           {/* Customer Service */}
           <div>
-            <h4 className="text-sm font-medium mb-4 text-gray-900">Customer Service</h4>
+            <h4 className="text-sm font-medium mb-4 text-gray-900">บริการลูกค้า</h4>
             <ul className="space-y-3">
               <li>
                 <Link to="/orders" className="text-gray-500 hover:text-gray-900 transition-colors text-sm">
-                  My Orders
+                  ออเดอร์ของฉัน
                 </Link>
               </li>
               <li>
                 <Link to="/profile" className="text-gray-500 hover:text-gray-900 transition-colors text-sm">
-                  My Account
+                  บัญชีของฉัน
                 </Link>
               </li>
               <li>
                 <a href="#" className="text-gray-500 hover:text-gray-900 transition-colors text-sm">
-                  Shipping Policy
+                  นโยบายการจัดส่ง
                 </a>
               </li>
               <li>
                 <a href="#" className="text-gray-500 hover:text-gray-900 transition-colors text-sm">
-                  Return Policy
+                  นโยบายการคืนสินค้า
                 </a>
               </li>
             </ul>
@@ -73,12 +73,12 @@ const Footer = () => {
 
           {/* Contact Info */}
           <div>
-            <h4 className="text-sm font-medium mb-4 text-gray-900">Contact Us</h4>
+            <h4 className="text-sm font-medium mb-4 text-gray-900">ติดต่อเรา</h4>
             <ul className="space-y-3">
               <li className="flex items-start space-x-2">
                 <MapPin className="w-4 h-4 text-gray-400 mt-0.5 shrink-0" />
                 <span className="text-gray-500 text-sm">
-                  123 Business St., Bangkok, Thailand
+                  123 ถนนธุรกิจ แขวงบางรัก เขตบางรัก กรุงเทพมหานคร 10500
                 </span>
               </li>
               <li className="flex items-center space-x-2">
@@ -113,7 +113,7 @@ const Footer = () => {
         {/* Bottom Bar */}
         <div className="border-t border-gray-200 mt-12 pt-8 text-center">
           <p className="text-gray-500 text-xs">
-            &copy; {currentYear} IoT Store. All rights reserved.
+            &copy; {currentYear} IoT Store สงวนลิขสิทธิ์
           </p>
         </div>
       </div>

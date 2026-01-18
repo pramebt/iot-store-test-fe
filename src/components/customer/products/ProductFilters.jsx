@@ -1,6 +1,6 @@
-import { Search, X, FolderTree } from 'lucide-react';
+import { Search, X, FolderTree, Loader2 } from 'lucide-react';
 
-export default function ProductFilters({ filters, onFilterChange, categories = [] }) {
+export default function ProductFilters({ filters, onFilterChange, categories = [], categoriesLoading = false }) {
   const handlePriceChange = (field, value) => {
     const numValue = value === '' ? undefined : Number(value);
     onFilterChange({ 
@@ -38,16 +38,23 @@ export default function ProductFilters({ filters, onFilterChange, categories = [
           {/* Category */}
           <div className="relative">
             <select
-              className="w-full px-5 py-3 pl-10 bg-white border border-slate-200/60 rounded-2xl focus:outline-none focus:ring-2 focus:ring-blue-500/50 focus:border-blue-500/50 text-sm text-slate-800 font-light transition-all duration-200 appearance-none cursor-pointer"
+              className="w-full px-5 py-3 pl-10 bg-white border border-slate-200/60 rounded-2xl focus:outline-none focus:ring-2 focus:ring-blue-500/50 focus:border-blue-500/50 text-sm text-slate-800 font-light transition-all duration-200 appearance-none cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed"
               value={filters.category || ''}
               onChange={(e) => onFilterChange({ category: e.target.value || undefined })}
+              disabled={categoriesLoading}
             >
-              <option value="">หมวดหมู่ทั้งหมด</option>
+              <option value="">
+                {categoriesLoading ? 'กำลังโหลดหมวดหมู่...' : 'หมวดหมู่ทั้งหมด'}
+              </option>
               {categories.map((cat) => (
                 <option key={cat.id} value={cat.id}>{cat.name}</option>
               ))}
             </select>
-            <FolderTree className="absolute left-3 top-3.5 w-4 h-4 text-slate-400 pointer-events-none" />
+            {categoriesLoading ? (
+              <Loader2 className="absolute left-3 top-3.5 w-4 h-4 text-slate-400 animate-spin pointer-events-none" />
+            ) : (
+              <FolderTree className="absolute left-3 top-3.5 w-4 h-4 text-slate-400 pointer-events-none" />
+            )}
           </div>
 
           {/* Sort */}

@@ -6,7 +6,7 @@ import { useCartStore } from '../../store/cartStore';
 
 const Header = () => {
   const navigate = useNavigate();
-  const { user, logout } = useAuthStore();
+  const { user, logout, isAuthenticated } = useAuthStore();
   const { items } = useCartStore();
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
 
@@ -38,16 +38,16 @@ const Header = () => {
             {/* Desktop Navigation */}
             <nav className="hidden md:flex items-center space-x-1">
             <Link to="/" className="text-sm font-medium text-gray-600 hover:text-gray-900 px-4 py-2 rounded-xl hover:bg-gray-100/50 transition-all duration-200">
-              Home
+              หน้าแรก
             </Link>
             <Link to="/products" className="text-sm font-medium text-gray-600 hover:text-gray-900 px-4 py-2 rounded-xl hover:bg-gray-100/50 transition-all duration-200">
-              Products
+              สินค้า
             </Link>
             <Link to="/about" className="text-sm font-medium text-gray-600 hover:text-gray-900 px-4 py-2 rounded-xl hover:bg-gray-100/50 transition-all duration-200">
-              About
+              เกี่ยวกับเรา
             </Link>
               <Link to="/contact" className="text-sm font-medium text-gray-600 hover:text-gray-900 px-4 py-2 rounded-xl hover:bg-gray-100/50 transition-all duration-200">
-                Contact
+                ติดต่อเรา
               </Link>
             </nav>
 
@@ -59,7 +59,7 @@ const Header = () => {
                 className="relative text-gray-600 hover:text-gray-900 p-2 rounded-xl hover:bg-gray-100/50 transition-all duration-200"
               >
                 <ShoppingCart className="w-5 h-5" />
-                {cartItemsCount > 0 && (
+                {isAuthenticated && user && cartItemsCount > 0 && (
                   <span className="absolute -top-1 -right-1 bg-red-500 text-white text-[10px] font-semibold rounded-full w-5 h-5 flex items-center justify-center shadow-lg">
                     {cartItemsCount}
                   </span>
@@ -71,7 +71,7 @@ const Header = () => {
                 <Link 
                   to="/orders" 
                   className="text-gray-600 hover:text-gray-900 p-2 rounded-xl hover:bg-gray-100/50 transition-all duration-200"
-                  title="My Orders"
+                  title="ออเดอร์ของฉัน"
                 >
                   <Package className="w-5 h-5" />
                 </Link>
@@ -106,7 +106,7 @@ const Header = () => {
                   to="/login" 
                   className="hidden sm:block bg-gray-900 text-white text-sm font-semibold px-6 py-2.5 rounded-2xl hover:bg-gray-800 transition-all duration-300 shadow-lg hover:shadow-xl active:scale-95"
                 >
-                  Login
+                  เข้าสู่ระบบ
                 </Link>
               )}
 
@@ -144,7 +144,7 @@ const Header = () => {
             <div className="flex flex-col h-full">
               {/* Mobile Menu Header */}
               <div className="flex items-center justify-between px-6 py-4 border-b border-gray-200/50">
-                <h2 className="text-lg font-semibold text-gray-900">Menu</h2>
+                <h2 className="text-lg font-semibold text-gray-900">เมนู</h2>
                 <button
                   onClick={closeMobileMenu}
                   className="text-gray-500 hover:text-gray-700 p-2 rounded-xl hover:bg-gray-100/50 transition-all"
@@ -160,28 +160,28 @@ const Header = () => {
                   onClick={closeMobileMenu}
                   className="flex items-center gap-3 px-4 py-3 text-gray-700 hover:text-gray-900 hover:bg-gray-100/50 rounded-xl transition-all duration-200 font-medium"
                 >
-                  <span>Home</span>
+                  <span>หน้าแรก</span>
                 </Link>
                 <Link 
                   to="/products" 
                   onClick={closeMobileMenu}
                   className="flex items-center gap-3 px-4 py-3 text-gray-700 hover:text-gray-900 hover:bg-gray-100/50 rounded-xl transition-all duration-200 font-medium"
                 >
-                  <span>Products</span>
+                  <span>สินค้า</span>
                 </Link>
                 <Link 
                   to="/about" 
                   onClick={closeMobileMenu}
                   className="flex items-center gap-3 px-4 py-3 text-gray-700 hover:text-gray-900 hover:bg-gray-100/50 rounded-xl transition-all duration-200 font-medium"
                 >
-                  <span>About</span>
+                  <span>เกี่ยวกับเรา</span>
                 </Link>
                 <Link 
                   to="/contact" 
                   onClick={closeMobileMenu}
                   className="flex items-center gap-3 px-4 py-3 text-gray-700 hover:text-gray-900 hover:bg-gray-100/50 rounded-xl transition-all duration-200 font-medium"
                 >
-                  <span>Contact</span>
+                  <span>ติดต่อเรา</span>
                 </Link>
 
                 {/* Divider */}
@@ -195,9 +195,9 @@ const Header = () => {
                 >
                   <div className="flex items-center gap-3">
                     <ShoppingCart className="w-5 h-5" />
-                    <span>Cart</span>
+                    <span>ตะกร้าสินค้า</span>
                   </div>
-                  {cartItemsCount > 0 && (
+                  {isAuthenticated && user && cartItemsCount > 0 && (
                     <span className="bg-red-500 text-white text-xs font-semibold rounded-full w-6 h-6 flex items-center justify-center">
                       {cartItemsCount}
                     </span>
@@ -212,7 +212,7 @@ const Header = () => {
                     className="flex items-center gap-3 px-4 py-3 text-gray-700 hover:text-gray-900 hover:bg-gray-100/50 rounded-xl transition-all duration-200 font-medium"
                   >
                     <Package className="w-5 h-5" />
-                    <span>My Orders</span>
+                    <span>ออเดอร์ของฉัน</span>
                   </Link>
                 )}
 
@@ -226,7 +226,7 @@ const Header = () => {
                       className="flex items-center gap-3 px-4 py-3 text-gray-700 hover:text-gray-900 hover:bg-gray-100/50 rounded-xl transition-all duration-200 font-medium"
                     >
                       <User className="w-5 h-5" />
-                      <span>Profile</span>
+                      <span>โปรไฟล์</span>
                     </Link>
                     {user.role === 'ADMIN' && (
                       <Link 
@@ -235,7 +235,7 @@ const Header = () => {
                         className="flex items-center gap-3 px-4 py-3 text-gray-700 hover:text-gray-900 hover:bg-gray-100/50 rounded-xl transition-all duration-200 font-medium"
                       >
                         <LayoutDashboard className="w-5 h-5" />
-                        <span>Admin Dashboard</span>
+                        <span>แดชบอร์ดแอดมิน</span>
                       </Link>
                     )}
                     <button
@@ -243,7 +243,7 @@ const Header = () => {
                       className="w-full flex items-center gap-3 px-4 py-3 text-red-600 hover:text-red-700 hover:bg-red-50 rounded-xl transition-all duration-200 font-medium text-left"
                     >
                       <LogOut className="w-5 h-5" />
-                      <span>Logout</span>
+                      <span>ออกจากระบบ</span>
                     </button>
                   </>
                 ) : (
@@ -254,7 +254,7 @@ const Header = () => {
                       onClick={closeMobileMenu}
                       className="w-full bg-gray-900 text-white text-center font-semibold px-6 py-3 rounded-2xl hover:bg-gray-800 transition-all duration-300 shadow-lg hover:shadow-xl active:scale-95"
                     >
-                      Login
+                      เข้าสู่ระบบ
                     </Link>
                   </>
                 )}

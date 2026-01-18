@@ -2,6 +2,7 @@ import { Link } from 'react-router-dom';
 import { Smartphone, Laptop, Watch, Headphones, Camera, Home, ArrowRight, Package } from 'lucide-react';
 import { categoriesService } from '../../../services/categories.service';
 import { useEffect, useState } from 'react';
+import { motion } from 'framer-motion';
 
 const categoryIcons = {
   'Smartphones': Smartphone,
@@ -38,7 +39,7 @@ export default function Categories() {
     return (
       <section className="py-24 bg-white">
         <div className="max-w-7xl mx-auto px-6 sm:px-8 lg:px-12">
-          <div className="text-center text-gray-400">Loading categories...</div>
+          <div className="text-center text-gray-400">กำลังโหลดหมวดหมู่...</div>
         </div>
       </section>
     );
@@ -48,59 +49,110 @@ export default function Categories() {
     return null;
   }
 
+  const containerVariants = {
+    hidden: { opacity: 0 },
+    visible: {
+      opacity: 1,
+      transition: {
+        staggerChildren: 0.1,
+        delayChildren: 0.2,
+      },
+    },
+  };
+
+  const itemVariants = {
+    hidden: { opacity: 0, y: 20, scale: 0.9 },
+    visible: {
+      opacity: 1,
+      y: 0,
+      scale: 1,
+      transition: {
+        duration: 0.5,
+        ease: "easeOut",
+      },
+    },
+  };
+
   return (
     <section className="py-24 bg-white">
       <div className="max-w-7xl mx-auto px-6 sm:px-8 lg:px-12">
         {/* Section Header */}
-        <div className="text-center mb-16">
+        <motion.div 
+          className="text-center mb-16"
+          initial={{ opacity: 0, y: 20 }}
+          whileInView={{ opacity: 1, y: 0 }}
+          viewport={{ once: true, margin: "-100px" }}
+          transition={{ duration: 0.6, ease: "easeOut" }}
+        >
           <h2 className="text-4xl sm:text-5xl md:text-6xl font-semibold tracking-tight text-gray-900 mb-4">
-            Shop by Category
+            เลือกซื้อตามหมวดหมู่
           </h2>
           <p className="text-lg text-gray-600 font-light max-w-2xl mx-auto">
-            Explore our curated collection of premium products
+            สำรวจสินค้าคุณภาพสูงที่คัดสรรมาอย่างดี
           </p>
-        </div>
+        </motion.div>
 
         {/* Categories Grid */}
-        <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-4 sm:gap-6">
+        <motion.div 
+          className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-4 sm:gap-6"
+          variants={containerVariants}
+          initial="hidden"
+          whileInView="visible"
+          viewport={{ once: true, margin: "-50px" }}
+        >
           {categories.map((category) => {
             const Icon = categoryIcons[category.name] || Package;
             const productCount = category._count?.products || 0;
             
             return (
-              <Link 
-                key={category.id} 
-                to={`/products?category=${category.id}`}
-                className="group"
-              >
-                <div className="bg-white rounded-2xl p-6 sm:p-8 text-center hover:shadow-xl transition-all duration-300 border border-gray-100 hover:border-gray-200 h-full flex flex-col items-center justify-center">
-                  <div className="flex justify-center mb-5">
-                    <div className="w-16 h-16 bg-gray-50 rounded-2xl flex items-center justify-center group-hover:bg-gray-100 transition-colors duration-300">
-                      <Icon className="w-7 h-7 text-gray-700 group-hover:scale-110 transition-transform duration-300" />
+              <motion.div key={category.id} variants={itemVariants}>
+                <Link 
+                  to={`/products?category=${category.id}`}
+                  className="group block"
+                >
+                  <motion.div 
+                    className="bg-white rounded-2xl p-6 sm:p-8 text-center hover:shadow-xl transition-all duration-300 border border-gray-100 hover:border-gray-200 h-full flex flex-col items-center justify-center"
+                    whileHover={{ y: -5, scale: 1.02 }}
+                    transition={{ duration: 0.2 }}
+                  >
+                    <div className="flex justify-center mb-5">
+                      <motion.div 
+                        className="w-16 h-16 bg-gray-50 rounded-2xl flex items-center justify-center group-hover:bg-gray-100 transition-colors duration-300"
+                        whileHover={{ rotate: [0, -5, 5, -5, 0] }}
+                        transition={{ duration: 0.5 }}
+                      >
+                        <Icon className="w-7 h-7 text-gray-700 group-hover:scale-110 transition-transform duration-300" />
+                      </motion.div>
                     </div>
-                  </div>
-                  <h3 className="font-semibold text-gray-900 mb-1.5 text-sm sm:text-base group-hover:text-gray-700 transition-colors">
-                    {category.name}
-                  </h3>
-                  {productCount > 0 && (
-                    <p className="text-xs text-gray-500">{productCount} {productCount === 1 ? 'product' : 'products'}</p>
-                  )}
-                </div>
-              </Link>
+                    <h3 className="font-semibold text-gray-900 mb-1.5 text-sm sm:text-base group-hover:text-gray-700 transition-colors">
+                      {category.name}
+                    </h3>
+                    {productCount > 0 && (
+                      <p className="text-xs text-gray-500">{productCount} {productCount === 1 ? 'รายการ' : 'รายการ'}</p>
+                    )}
+                  </motion.div>
+                </Link>
+              </motion.div>
             );
           })}
-        </div>
+        </motion.div>
 
         {/* View All Link */}
-        <div className="text-center mt-12">
+        <motion.div 
+          className="text-center mt-12"
+          initial={{ opacity: 0 }}
+          whileInView={{ opacity: 1 }}
+          viewport={{ once: true }}
+          transition={{ duration: 0.6, delay: 0.4 }}
+        >
           <Link 
             to="/products"
             className="inline-flex items-center gap-2 text-gray-700 hover:text-gray-900 font-medium text-sm transition-colors group"
           >
-            <span>View All Products</span>
+            <span>ดูสินค้าทั้งหมด</span>
             <ArrowRight className="w-4 h-4 group-hover:translate-x-1 transition-transform" />
           </Link>
-        </div>
+        </motion.div>
       </div>
     </section>
   );

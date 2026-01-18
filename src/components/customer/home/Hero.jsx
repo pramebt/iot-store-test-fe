@@ -1,6 +1,7 @@
 import { Link } from 'react-router-dom';
 import { ArrowRight, Sparkles } from 'lucide-react';
 import { useEffect, useState } from 'react';
+import { motion } from 'framer-motion';
 
 export default function Hero() {
   const [scrollY, setScrollY] = useState(0);
@@ -41,53 +42,97 @@ export default function Hero() {
       <div className="relative z-10 max-w-7xl mx-auto px-6 sm:px-8 lg:px-12 w-full py-20">
         <div className="max-w-5xl mx-auto text-center">
           
-
           {/* Main Heading with text shadow */}
-          <h1 
+          <motion.h1 
             className="text-5xl sm:text-6xl md:text-7xl lg:text-8xl font-bold tracking-tight text-white mb-6 leading-[1.1] drop-shadow-2xl"
             style={{
               textShadow: '0 4px 20px rgba(0,0,0,0.5), 0 2px 10px rgba(0,0,0,0.3)',
             }}
+            initial={{ opacity: 0, y: 30 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.8, ease: "easeOut" }}
           >
-            Innovation Meets
+            <motion.span
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ duration: 0.8, delay: 0.2, ease: "easeOut" }}
+            >
+              อุปกรณ์ IoT
+            </motion.span>
             <br />
-            <span className="bg-linear-to-r from-white via-gray-100 to-white bg-clip-text text-transparent">
-              Excellence
-            </span>
-          </h1>
+            <motion.span 
+              className="bg-linear-to-r from-white via-gray-100 to-white bg-clip-text text-transparent"
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ duration: 0.8, delay: 0.4, ease: "easeOut" }}
+            >
+              เพื่ออนาคตที่ชาญฉลาด
+            </motion.span>
+          </motion.h1>
 
           {/* Subheading */}
-          <p className="text-lg sm:text-xl md:text-2xl text-white/90 mb-12 leading-relaxed font-light max-w-3xl mx-auto drop-shadow-lg">
-            Discover cutting-edge IoT products designed for the modern world. 
+          <motion.p 
+            className="text-lg sm:text-xl md:text-2xl text-white/90 mb-12 leading-relaxed font-light max-w-3xl mx-auto drop-shadow-lg"
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.8, delay: 0.6, ease: "easeOut" }}
+          >
+            ร้านค้าออนไลน์สำหรับอุปกรณ์ IoT และสินค้าคุณภาพสูง 
             <br className="hidden sm:block" />
-            Quality, reliability, and innovation in every purchase.
-          </p>
+            พร้อมบริการติดตั้งและดูแลหลังการขาย
+          </motion.p>
 
           {/* CTA Buttons */}
-          <div className="flex flex-col sm:flex-row gap-4 justify-center items-center mb-16">
+          <motion.div 
+            className="flex flex-col sm:flex-row gap-4 justify-center items-center mb-16"
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.8, delay: 0.8, ease: "easeOut" }}
+          >
             <Link to="/products">
-              <button className="group bg-white text-gray-900 text-base px-8 py-4 rounded-full hover:bg-gray-100 transition-all duration-300 shadow-2xl hover:shadow-white/20 hover:scale-105 inline-flex items-center gap-2 font-semibold">
-                <span>Shop Now</span>
+              <motion.button 
+                className="group bg-white text-gray-900 text-base px-8 py-4 rounded-full hover:bg-gray-100 transition-all duration-300 shadow-2xl hover:shadow-white/20 hover:scale-105 inline-flex items-center gap-2 font-semibold"
+                whileHover={{ scale: 1.05 }}
+                whileTap={{ scale: 0.95 }}
+              >
+                <span>เลือกซื้อสินค้า</span>
                 <ArrowRight className="w-4 h-4 group-hover:translate-x-1 transition-transform" />
-              </button>
+              </motion.button>
             </Link>
             <Link to="/about">
-              <button className="text-white text-base px-8 py-4 rounded-full hover:bg-white/10 backdrop-blur-sm transition-all duration-300 border-2 border-white/30 hover:border-white/50 font-semibold hover:scale-105">
-                Learn More
-              </button>
+              <motion.button 
+                className="text-white text-base px-8 py-4 rounded-full hover:bg-white/10 backdrop-blur-sm transition-all duration-300 border-2 border-white/30 hover:border-white/50 font-semibold hover:scale-105"
+                whileHover={{ scale: 1.05 }}
+                whileTap={{ scale: 0.95 }}
+              >
+                เรียนรู้เพิ่มเติม
+              </motion.button>
             </Link>
-          </div>
+          </motion.div>
 
           
         </div>
       </div>
 
       {/* Scroll Indicator */}
-      <div className="absolute bottom-8 left-1/2 transform -translate-x-1/2 z-10 animate-bounce">
-        <div className="w-6 h-10 border-2 border-white/30 rounded-full flex justify-center">
+      <motion.div 
+        className="absolute bottom-8 left-1/2 transform -translate-x-1/2 z-10"
+        initial={{ opacity: 0, y: -20 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ duration: 0.8, delay: 1.2, ease: "easeOut" }}
+      >
+        <motion.div 
+          className="w-6 h-10 border-2 border-white/30 rounded-full flex justify-center"
+          animate={{ y: [0, 10, 0] }}
+          transition={{ 
+            duration: 1.5, 
+            repeat: Infinity, 
+            ease: "easeInOut" 
+          }}
+        >
           <div className="w-1 h-3 bg-white/50 rounded-full mt-2"></div>
-        </div>
-      </div>
+        </motion.div>
+      </motion.div>
     </section>
   );
 }
