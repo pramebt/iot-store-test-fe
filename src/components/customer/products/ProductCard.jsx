@@ -11,7 +11,17 @@ export default function ProductCard({ product }) {
     navigate(`/products/${product.id}`);
   };
 
-  const isOutOfStock = product.stock === 0 || product.stock === null || product.stock === undefined;
+  // ตรวจสอบสต็อกจากทุกสถานที่ขาย (ใช้ availableStock ถ้ามี)
+  const availableStock = product.availableStock !== undefined 
+    ? product.availableStock 
+    : (product.stock || 0);
+  const availableLocations = product.availableLocations || [];
+  // ถ้ามีสต็อกในสถานที่ขายใดๆ แสดงว่ายังไม่หมด (ตรวจสอบทั้ง availableStock และ availableLocations)
+  const hasStockInAnyLocation = availableStock > 0 || availableLocations.length > 0;
+  const isOutOfStock = !hasStockInAnyLocation;
+  // แสดงข้อมูลสถานที่เมื่อมีสต็อกและมีหลายสถานที่
+  const showAvailableLocations = hasStockInAnyLocation && availableLocations.length > 0;
+  
   const hasDiscount = product.basePrice && product.price < product.basePrice;
   const discountPercent = hasDiscount 
     ? Math.round(((product.basePrice - product.price) / product.basePrice) * 100)
@@ -23,6 +33,13 @@ export default function ProductCard({ product }) {
       {isOutOfStock && (
         <div className="absolute top-3 right-3 z-10 bg-red-500 text-white text-xs font-semibold px-3 py-1.5 rounded-full shadow-lg">
           สินค้าหมด
+        </div>
+      )}
+      
+      {/* Available Locations Badge - แสดงเมื่อมีสต็อกในบางสถานที่ */}
+      {showAvailableLocations && (
+        <div className="absolute top-3 right-3 z-10 bg-green-500 text-white text-xs font-semibold px-3 py-1.5 rounded-full shadow-lg">
+          มีสต็อก {availableLocations.length} สาขา
         </div>
       )}
 
@@ -97,8 +114,26 @@ export default function ProductCard({ product }) {
 
           {/* Stock Info */}
           {!isOutOfStock && (
-            <div className="text-xs text-gray-500">
-              <span className="font-medium">สต็อก:</span> {product.stock} ชิ้น
+            <div className="text-xs text-gray-500 space-y-1">
+              <div>
+                <span className="font-medium">สต็อก:</span> {availableStock} ชิ้น
+              </div>
+              {/* แสดงสถานที่ที่มีสต็อก - แสดงเมื่อมีหลายสถานที่ */}
+              {showAvailableLocations && (
+                <div className="text-xs text-gray-600 mt-1">
+                  <span className="font-medium">มีที่:</span>{' '}
+                  {availableLocations.slice(0, 2).map((loc, idx) => (
+                    <span key={loc.id}>
+                      {idx > 0 && ', '}
+                      {loc.name}
+                      {loc.province && ` (${loc.province})`}
+                    </span>
+                  ))}
+                  {availableLocations.length > 2 && (
+                    <span className="text-gray-500"> และอีก {availableLocations.length - 2} สาขา</span>
+                  )}
+                </div>
+              )}
             </div>
           )}
         </div>
