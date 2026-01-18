@@ -14,6 +14,7 @@ export default function OrdersPage() {
   const location = useLocation();
   const [orders, setOrders] = useState([]);
   const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(null);
   const [orderToCancel, setOrderToCancel] = useState(null);
   const [orderToUpload, setOrderToUpload] = useState(null);
   const [cancelling, setCancelling] = useState(false);
@@ -22,6 +23,8 @@ export default function OrdersPage() {
   useEffect(() => {
     if (isAuthenticated) {
       loadOrders();
+    } else {
+      setLoading(false);
     }
   }, [isAuthenticated]);
 
@@ -37,10 +40,13 @@ export default function OrdersPage() {
   const loadOrders = async () => {
     try {
       setLoading(true);
+      setError(null);
       const data = await ordersService.getAll();
       setOrders(data.orders || []);
     } catch (err) {
-      toast.error(err.message || 'Failed to load orders');
+      const errorMessage = err.response?.data?.message || err.message || 'ไม่สามารถโหลดข้อมูลออเดอร์ได้';
+      setError(errorMessage);
+      toast.error(errorMessage);
       console.error('Error loading orders:', err);
     } finally {
       setLoading(false);
@@ -149,13 +155,13 @@ export default function OrdersPage() {
           <div className="w-24 h-24 bg-linear-to-br from-slate-100 to-slate-200 rounded-3xl flex items-center justify-center mx-auto mb-8 shadow-sm">
             <Package className="w-12 h-12 text-slate-500" />
           </div>
-          <h2 className="text-4xl font-semibold mb-3 text-slate-800 tracking-tight">Login Required</h2>
+          <h2 className="text-4xl font-semibold mb-3 text-slate-800 tracking-tight">ต้องเข้าสู่ระบบ</h2>
           <p className="text-slate-600 mb-10 text-lg font-light">
-            Please login to view your orders
+            กรุณาเข้าสู่ระบบเพื่อดูออเดอร์ของคุณ
           </p>
           <Link to="/login">
             <button className="bg-slate-800 text-white px-8 py-3.5 rounded-full hover:bg-slate-700 transition-all duration-200 font-medium text-sm shadow-sm hover:shadow-md">
-              Login
+              เข้าสู่ระบบ
             </button>
           </Link>
         </div>
@@ -168,7 +174,7 @@ export default function OrdersPage() {
       <PageContainer>
         <div className="text-center py-32">
           <Loader2 className="w-8 h-8 text-slate-400 animate-spin mx-auto mb-4" />
-          <div className="text-slate-600 font-light">Loading orders...</div>
+          <div className="text-slate-600 font-light">กำลังโหลดออเดอร์...</div>
         </div>
       </PageContainer>
     );
@@ -181,13 +187,13 @@ export default function OrdersPage() {
           <div className="w-16 h-16 bg-red-50 rounded-full flex items-center justify-center mx-auto mb-6">
             <XCircle className="w-8 h-8 text-red-500" />
           </div>
-          <div className="text-xl text-slate-800 mb-2 font-medium">Error</div>
+          <div className="text-xl text-slate-800 mb-2 font-medium">เกิดข้อผิดพลาด</div>
           <div className="text-slate-600 mb-8 font-light">{error}</div>
           <button 
             onClick={loadOrders}
             className="bg-slate-800 text-white px-6 py-2.5 rounded-full hover:bg-slate-700 transition-all duration-200 font-medium text-sm shadow-sm hover:shadow-md"
           >
-            Retry
+            ลองอีกครั้ง
           </button>
         </div>
       </PageContainer>
@@ -201,13 +207,13 @@ export default function OrdersPage() {
           <div className="w-24 h-24 bg-linear-to-br from-slate-100 to-slate-200 rounded-3xl flex items-center justify-center mx-auto mb-8 shadow-sm">
             <Package className="w-12 h-12 text-slate-500" />
           </div>
-          <h2 className="text-4xl font-semibold mb-3 text-slate-800 tracking-tight">No Orders Yet</h2>
+          <h2 className="text-4xl font-semibold mb-3 text-slate-800 tracking-tight">ยังไม่มีออเดอร์</h2>
           <p className="text-slate-600 mb-10 text-lg font-light">
-            You haven't placed any orders yet
+            คุณยังไม่ได้สั่งซื้อสินค้า
           </p>
           <Link to="/products">
             <button className="bg-slate-800 text-white px-8 py-3.5 rounded-full hover:bg-slate-700 transition-all duration-200 font-medium text-sm shadow-sm hover:shadow-md">
-              Start Shopping
+              เริ่มช้อปปิ้ง
             </button>
           </Link>
         </div>
@@ -219,8 +225,8 @@ export default function OrdersPage() {
     <div className="min-h-screen bg-linear-to-b from-slate-50/40 via-white to-slate-50/30">
       <PageContainer>
         <div className="mb-12">
-          <h1 className="text-5xl md:text-6xl font-semibold mb-3 text-slate-800 tracking-tight">Orders</h1>
-          <p className="text-slate-600 text-lg font-light">View and manage your orders</p>
+          <h1 className="text-5xl md:text-6xl font-semibold mb-3 text-slate-800 tracking-tight">ออเดอร์ของฉัน</h1>
+          <p className="text-slate-600 text-lg font-light">ดูและจัดการออเดอร์ของคุณ</p>
         </div>
 
       <div className="space-y-4">
