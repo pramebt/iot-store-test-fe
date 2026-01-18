@@ -44,8 +44,6 @@ export default function AnalyticsPage() {
         }),
       ]);
 
-      console.log('Analytics data loaded:', { summary, provinces, history, topProvinces });
-
       setData({
         summary: summary || {},
         salesByProvince: provinces || [],

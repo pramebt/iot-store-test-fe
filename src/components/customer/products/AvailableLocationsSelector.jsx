@@ -23,7 +23,6 @@ export default function AvailableLocationsSelector({
       setLoading(true);
       setError(null);
       const data = await productsService.getAvailability(productId, customerProvince);
-      console.log('Product availability data:', data);
       
       // Filter: Only show SalesLocations (STORE, IOT_POINT), NOT Delivery Addresses
       // 

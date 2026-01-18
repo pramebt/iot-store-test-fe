@@ -34,14 +34,6 @@ export default function CustomerOrderDetailPage() {
       setLoading(true);
       setError(null);
       const data = await ordersService.getById(id);
-      console.log('Order data:', data);
-      console.log('Delivery Address:', data.deliveryAddress);
-      console.log('SalesLocation:', data.salesLocation);
-      console.log('deliveryAddressId:', data.deliveryAddressId);
-      console.log('salesLocationId:', data.salesLocationId);
-      console.log('Order Type:', data.salesLocationId ? 'In-Store Order' : 'Online Order');
-      console.log('Has Delivery Address:', data.deliveryAddressId ? 'Yes' : 'No');
-      console.log('Has SalesLocation:', data.salesLocationId ? 'Yes' : 'No');
       setOrder(data);
     } catch (err) {
       console.error('Error fetching order:', err);

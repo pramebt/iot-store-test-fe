@@ -24,7 +24,6 @@ export default function EditProductModal({ isOpen, onClose, onSuccess, productId
 
   useEffect(() => {
     if (isOpen && productId) {
-      console.log('EditProductModal: Loading product with ID:', productId)
       loadCategories()
       loadProduct()
     } else if (isOpen && !productId) {
@@ -52,20 +51,15 @@ export default function EditProductModal({ isOpen, onClose, onSuccess, productId
 
     try {
       setLoadingProduct(true)
-      console.log('Loading product with ID:', productId)
       const response = await productsService.getById(productId)
       
       // Handle response format: { product: {...} } or direct product object
       const product = response.product || response
       
       if (!product) {
-        console.error('Product not found for ID:', productId)
         setErrors({ submit: 'Product not found' })
         return
       }
-      
-      console.log('Loaded product:', product)
-      console.log('Product stock:', product.stock)
       
       setFormData({
         name: product.name || '',

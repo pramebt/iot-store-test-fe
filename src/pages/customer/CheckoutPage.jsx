@@ -67,7 +67,6 @@ export default function CheckoutPage() {
     try {
       // Fetch latest profile data from API
       const profileData = await authService.getCurrentUser();
-      console.log('Profile data from API:', profileData);
       
       // Check if profile has address data
       if (!profileData.address && !profileData.phone && !profileData.province) {
@@ -83,14 +82,12 @@ export default function CheckoutPage() {
       if (profileData.province) {
         // Search province by name (supports both Thai and English)
         const provinces = thailandAddress.searchProvince(profileData.province);
-        console.log('Searching for province:', profileData.province, 'Found:', provinces);
         if (provinces.length > 0) {
           provinceId = provinces[0].id;
           
           // Find district by name
           if (profileData.district && provinceId) {
             const districts = thailandAddress.searchDistrict(profileData.district, provinceId);
-            console.log('Searching for district:', profileData.district, 'Found:', districts);
             if (districts.length > 0) {
               districtId = districts[0].id;
               
@@ -101,7 +98,6 @@ export default function CheckoutPage() {
                   sd.zipCode === profileData.postalCode || 
                   sd.zipCode === parseInt(profileData.postalCode)
                 );
-                console.log('Searching for postal code:', profileData.postalCode, 'Found sub-districts:', subDistricts.length);
                 if (subDistrict) {
                   subDistrictId = subDistrict.id;
                 }
@@ -124,12 +120,6 @@ export default function CheckoutPage() {
           zipCode: profileData.postalCode || formData.addressData.zipCode,
         },
       };
-
-      console.log('Updating form data:', {
-        old: formData,
-        new: newFormData,
-        profile: profileData
-      });
       
       // Update form data with profile information
       setFormData(newFormData);
@@ -199,13 +189,6 @@ export default function CheckoutPage() {
           quantity: item.quantity
         }));
 
-        console.log('Calculating shipping with:', {
-          items: orderItems,
-          province: provinceData.name_th,
-          provinceData,
-          isInStoreOrder: hasSelectedLocation
-        });
-
         if (!provinceData.name_th) {
           console.error('Province name_th is missing:', provinceData);
           setShippingInfo({
@@ -243,14 +226,7 @@ export default function CheckoutPage() {
         }
 
         // Online Order: Calculate shipping from DeliveryAddress
-        console.log('Sending to shipping service:', {
-          orderItems,
-          province: provinceData.name_th,
-          orderItemsString: JSON.stringify(orderItems)
-        });
-
         const info = await shippingService.calculateShipping(orderItems, provinceData.name_th);
-        console.log('Shipping info received:', info);
         setShippingInfo(info);
       } catch (error) {
         console.error('Failed to calculate shipping:', error);
