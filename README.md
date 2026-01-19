@@ -4,6 +4,10 @@
 cd client
 npm install
 ```
+###run server
+```bash
+npm run dev
+```
 ## ภาพรวมโปรเจกต์
 
 โปรเจกต์นี้เป็นระบบจัดการร้านค้าออนไลน์ (E-commerce Management System) ที่ประกอบด้วย:
