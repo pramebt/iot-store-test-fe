@@ -1,7 +1,6 @@
 # คู่มือการใช้งานโปรเจกต์
 #### ติดตั้ง Dependencies สำหรับ Frontend
 ```bash
-cd client
 npm install
 ```
 ###run server
