@@ -1,16 +1,100 @@
-# React + Vite
+# คู่มือการใช้งานโปรเจกต์
+#### ติดตั้ง Dependencies สำหรับ Frontend
+```bash
+npm install
+```
+###run server
+```bash
+npm run dev
+```
+## ภาพรวมโปรเจกต์
 
-This template provides a minimal setup to get React working in Vite with HMR and some ESLint rules.
+โปรเจกต์นี้เป็นระบบจัดการร้านค้าออนไลน์ (E-commerce Management System) ที่ประกอบด้วย:
+- **Frontend**: React + Vite + Tailwind CSS
+- **Backend**: Node.js + Express + Prisma
+- **Database**: PostgreSQL (ผ่าน Prisma ORM)
 
-Currently, two official plugins are available:
+## ฟีเจอร์ที่มีในระบบ
 
-- [@vitejs/plugin-react](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react) uses [Babel](https://babeljs.io/) (or [oxc](https://oxc.rs) when used in [rolldown-vite](https://vite.dev/guide/rolldown)) for Fast Refresh
-- [@vitejs/plugin-react-swc](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react-swc) uses [SWC](https://swc.rs/) for Fast Refresh
+### สำหรับลูกค้า (Customer)
+- ลงทะเบียนและเข้าสู่ระบบ
+- ดูสินค้าและรายละเอียดสินค้า
+- เพิ่มสินค้าลงตะกร้า
+- สั่งซื้อสินค้า
+- อัปโหลดหลักฐานการชำระเงิน
+- ดูประวัติการสั่งซื้อ
+- จัดการข้อมูลส่วนตัวและที่อยู่จัดส่ง
 
-## React Compiler
+### สำหรับผู้ดูแลระบบ (Admin)
+- จัดการสินค้า (เพิ่ม, แก้ไข, ลบ)
+- จัดการหมวดหมู่สินค้า
+- จัดการคำสั่งซื้อ (ดู, อัปเดตสถานะ)
+- จัดการลูกค้า
+- จัดการที่อยู่จัดส่ง
+- จัดการจุดขาย (Sales Locations)
+- ดูรายงานและสถิติการขาย
+- ดูแผนที่การจัดส่ง
 
-The React Compiler is not enabled on this template because of its impact on dev & build performances. To add it, see [this documentation](https://react.dev/learn/react-compiler/installation).
 
-## Expanding the ESLint configuration
 
-If you are developing a production application, we recommend using TypeScript with type-aware lint rules enabled. Check out the [TS template](https://github.com/vitejs/vite/tree/main/packages/create-vite/template-react-ts) for information on how to integrate TypeScript and [`typescript-eslint`](https://typescript-eslint.io) in your project.
+
+
+### สำหรับลูกค้า
+
+1. **ลงทะเบียน**: ไปที่หน้า Register เพื่อสร้างบัญชีใหม่
+2. **เข้าสู่ระบบ**: ใช้อีเมลและรหัสผ่านที่ลงทะเบียนไว้
+3. **เลือกสินค้า**: ดูสินค้าที่หน้า Products และคลิกเพื่อดูรายละเอียด
+4. **เพิ่มลงตะกร้า**: คลิก "Add to Cart" ในหน้าสินค้า
+5. **สั่งซื้อ**: ไปที่ตะกร้าสินค้า (Cart) และคลิก "Checkout"
+6. **ชำระเงิน**: อัปโหลดหลักฐานการชำระเงินหลังจากสั่งซื้อ
+7. **ติดตามคำสั่งซื้อ**: ดูสถานะคำสั่งซื้อในหน้า Orders
+
+### สำหรับผู้ดูแลระบบ
+
+1. **เข้าสู่ระบบ**: ใช้บัญชี Admin เพื่อเข้าสู่ระบบ
+2. **จัดการสินค้า**: ไปที่หน้า Products Management เพื่อเพิ่ม/แก้ไข/ลบสินค้า
+3. **จัดการหมวดหมู่**: ไปที่หน้า Categories Management
+4. **จัดการคำสั่งซื้อ**: ไปที่หน้า Orders Management เพื่อดูและอัปเดตสถานะคำสั่งซื้อ
+5. **ดูรายงาน**: ไปที่หน้า Analytics เพื่อดูสถิติการขาย
+
+## โครงสร้างโปรเจกต์
+
+```
+dtctest/
+├── client/              # Frontend (React + Vite)
+│   ├── src/
+│   │   ├── components/  # React Components
+│   │   ├── pages/       # Page Components
+│   │   ├── services/    # API Services
+│   │   ├── store/       # State Management (Zustand)
+│   │   └── utils/       # Utility Functions
+│   └── package.json
+│
+├── server/              # Backend (Node.js + Express)
+│   ├── src/
+│   │   ├── controllers/ # Request Controllers
+│   │   ├── routes/      # API Routes
+│   │   ├── services/    # Business Logic
+│   │   ├── middleware/  # Express Middleware
+│   │   └── utils/       # Utility Functions
+│   ├── prisma/          # Database Schema & Migrations
+│   └── package.json
+│
+
+```
+
+## สถานะการพัฒนา
+
+### ฟีเจอร์ที่พร้อมใช้งาน
+- ✅ ระบบการลงทะเบียนและเข้าสู่ระบบ
+- ✅ ระบบจัดการสินค้า
+- ✅ ระบบตะกร้าสินค้า
+- ✅ ระบบสั่งซื้อสินค้า
+- ✅ ระบบจัดการคำสั่งซื้อ
+- ✅ ระบบอัปโหลดหลักฐานการชำระเงิน
+- ✅ ระบบจัดการที่อยู่จัดส่ง
+- ✅ ระบบจัดการจุดขาย (Sales Locations)
+- ✅ ระบบรายงานและสถิติ
+- ✅ ระบบแผนที่การจัดส่ง
+
+⚠️ : โปรเจกต์นี้ยังไม่มีระบบแสกน (Scanning System) หากต้องการใช้งานระบบแสกน เช่น การแสกนบาร์โค้ดสินค้า หรือการแสกน QR Code จะต้องพัฒนาต่อในอนาคต
