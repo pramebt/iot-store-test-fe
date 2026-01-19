@@ -5,7 +5,6 @@ import ProductCard from '../../components/customer/products/ProductCard';
 import ProductFilters from '../../components/customer/products/ProductFilters';
 import PageContainer from '../../components/common/PageContainer';
 import PageHeader from '../../components/common/PageHeader';
-import Button from '../../components/common/Button';
 import { Loader2, XCircle, Package } from 'lucide-react';
 import { motion } from 'framer-motion';
 

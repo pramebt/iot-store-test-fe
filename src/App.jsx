@@ -24,7 +24,6 @@ import OrderDetailPage from './pages/admin/OrderDetailPage';
 import CustomersManagementPage from './pages/admin/CustomersManagementPage';
 import SalesLocationsManagementPage from './pages/admin/SalesLocationsManagementPage';
 import DeliveryAddressesManagementPage from './pages/admin/DeliveryAddressesManagementPage';
-import TestAPI from './pages/TestAPI';
 import NotFound from './pages/NotFound';
 import { ToastContainer } from './components/common/Toast';
 
@@ -45,7 +44,6 @@ function App() {
           <Route path="/profile" element={<ProfilePage />} />
           <Route path="/about" element={<About />} />
           <Route path="/contact" element={<Contact />} />
-          <Route path="/test-api" element={<TestAPI />} />
         </Route>
 
         {/* Admin Routes with AdminLayout - Protected by Admin Role */}

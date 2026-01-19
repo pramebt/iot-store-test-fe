@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react'
-import { Users, CheckCircle, PlusCircle, ShoppingCart, Info, Loader2 } from 'lucide-react'
+import { Users, CheckCircle, PlusCircle, ShoppingCart, Loader2 } from 'lucide-react'
 import { customersService } from '../../services/customers.service'
 import StatCard from '../../components/common/StatCard'
 import PageHeader from '../../components/common/PageHeader'

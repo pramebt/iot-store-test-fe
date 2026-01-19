@@ -1,6 +1,6 @@
-import { LineChart, Line, BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer, Cell } from 'recharts';
+import { LineChart, Line, BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, Cell } from 'recharts';
 import { formatPrice } from '../../../utils/formatPrice';
-import { TrendingUp, TrendingDown, DollarSign, Package } from 'lucide-react';
+import { TrendingUp, TrendingDown, Package } from 'lucide-react';
 
 export default function AnalyticsCharts({ salesHistory = [], topProvinces = [] }) {
   // Format data for charts

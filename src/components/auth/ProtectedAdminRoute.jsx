@@ -1,4 +1,4 @@
-import { Navigate, Outlet } from 'react-router-dom';
+import { Outlet } from 'react-router-dom';
 import { useAuthStore } from '../../store/authStore';
 import { USER_ROLES } from '../../utils/constants';
 import UnauthorizedAccess from '../../pages/UnauthorizedAccess';
