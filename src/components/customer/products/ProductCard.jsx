@@ -61,6 +61,8 @@ export default function ProductCard({ product }) {
             alt={product.name}
             className={`w-full h-full object-cover group-hover:scale-110 transition-transform duration-500 ${isOutOfStock ? 'grayscale' : ''}`}
             loading="lazy"
+            decoding="async"
+            fetchPriority="low"
           />
           {isOutOfStock && (
             <div className="absolute inset-0 bg-black/30"></div>

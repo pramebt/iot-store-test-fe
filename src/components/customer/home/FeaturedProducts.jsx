@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react';
+import { useEffect, useState, useRef, useCallback } from 'react';
 import { Link } from 'react-router-dom';
 import { productsService } from '../../../services/products.service';
 import ProductCard from '../products/ProductCard';
@@ -7,23 +7,30 @@ import { motion } from 'framer-motion';
 
 export default function FeaturedProducts() {
   const [products, setProducts] = useState([]);
-  const [loading, setLoading] = useState(true);
+  const [loading, setLoading] = useState(false);
+  const hasLoadedRef = useRef(false);
 
-  useEffect(() => {
-    loadProducts();
-  }, []);
-
-  const loadProducts = async () => {
+  const loadProducts = useCallback(async () => {
+    if (hasLoadedRef.current) return; // Prevent multiple loads
+    
+    hasLoadedRef.current = true;
     try {
       setLoading(true);
       const data = await productsService.getAll({ limit: 8, status: 'Active' });
       setProducts(data.products || []);
     } catch (err) {
       console.error('Error loading products:', err);
+      setProducts([]); // Set empty array on error to prevent infinite loading
     } finally {
       setLoading(false);
     }
-  };
+  }, []);
+
+  // Load products immediately when component mounts
+  // Since this component is already lazy loaded, we can load data immediately
+  useEffect(() => {
+    loadProducts();
+  }, [loadProducts]);
 
   if (loading) {
     return (
