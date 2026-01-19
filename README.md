@@ -1,5 +1,9 @@
 # คู่มือการใช้งานโปรเจกต์
-
+#### ติดตั้ง Dependencies สำหรับ Frontend
+```bash
+cd client
+npm install
+```
 ## ภาพรวมโปรเจกต์
 
 โปรเจกต์นี้เป็นระบบจัดการร้านค้าออนไลน์ (E-commerce Management System) ที่ประกอบด้วย:
